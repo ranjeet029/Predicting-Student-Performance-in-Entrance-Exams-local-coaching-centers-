@@ -1352,6 +1352,10 @@ def upload_dataset():
 
     df.columns = df.columns.str.strip().str.lower()
 
+    # remove NaN values
+    df = df.fillna(0)
+    
+    
     # detect numeric columns automatically
     numeric_cols = df.select_dtypes(include=['int64','float64']).columns
 
@@ -1441,6 +1445,13 @@ def prediction_page():
         df = pd.read_csv("dataset/dataset.csv")
 
         df.columns = df.columns.str.strip().str.lower()
+        
+        # remove unwanted unnamed columns
+        df = df.loc[:, ~df.columns.str.contains('^unnamed')]
+        numeric_cols = df.select_dtypes(include=['int64','float64']).columns
+         # CLEAN DATA
+        df.replace("",0,inplace=True)
+        df.fillna(0,inplace=True)
 
         # numeric columns detect
         numeric_cols = df.select_dtypes(include=['int64','float64']).columns
@@ -1452,8 +1463,12 @@ def prediction_page():
         ]
 
         # subject columns auto detect
-        subject_cols = [c for c in numeric_cols if c not in ignore_cols]
-
+        # subject_cols = [c for c in numeric_cols if c not in ignore_cols]
+        subject_cols = [
+        c for c in numeric_cols
+        if c not in ignore_cols and not c.startswith("unnamed")
+        ]
+        
         # अगर subject detect नहीं हुआ
         if len(subject_cols) == 0:
             subject_cols = numeric_cols
