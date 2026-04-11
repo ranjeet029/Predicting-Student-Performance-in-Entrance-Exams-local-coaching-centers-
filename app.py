@@ -5,7 +5,7 @@ from flask_mail import Mail, Message
 from datetime import datetime
 from datetime import timedelta
 import random
-import pandas as pd
+# import pandas as pd
 import time
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
@@ -14,7 +14,7 @@ from werkzeug.security import check_password_hash
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 import joblib
-
+import csv
 import os
 import string
 import random
@@ -1442,7 +1442,9 @@ def prediction_page():
 
     if run:
 
-        df = pd.read_csv("dataset/dataset.csv")
+        # df = pd.read_csv("dataset/dataset.csv")
+        with open("dataset/dataset.csv") as f:
+        data = list(csv.DictReader(f))
 
         df.columns = df.columns.str.strip().str.lower()
         
