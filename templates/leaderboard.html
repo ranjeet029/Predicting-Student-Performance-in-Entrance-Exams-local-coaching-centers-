@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "student_navbar.html" %}
+
+<div class="container mt-5">
+
+<h2 class="text-center mb-4">🏆 Student Leaderboard</h2>
+
+<div class="card p-4 shadow">
+
+<table class="table table-bordered table-hover text-center">
+
+<thead class="table-dark">
+
+<tr>
+<th>Rank</th>
+<th>Student ID</th>
+<th>Total Marks</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for s in data %}
+
+<tr>
+
+<td>
+{% if s.rank_no == 1 %}
+🥇
+{% elif s.rank_no == 2 %}
+🥈
+{% elif s.rank_no == 3 %}
+🥉
+{% else %}
+#{{s.rank_no}}
+{% endif %}
+</td>
+
+<td>{{s.student_id}}</td>
+
+<td>{{s.total}}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

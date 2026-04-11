@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+.login-wrapper{
+min-height:90vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(120deg,#d7f0ef,#f4f6f9);
+}
+
+.login-card{
+width:900px;
+background:white;
+border-radius:10px;
+box-shadow:0px 8px 25px rgba(0,0,0,0.15);
+display:flex;
+overflow:hidden;
+}
+
+.login-left{
+flex:1;
+padding:50px;
+}
+
+.login-left h2{
+margin-bottom:20px;
+font-weight:600;
+}
+
+.input-group{
+margin-bottom:15px;
+}
+
+.input-group input{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:30px;
+outline:none;
+}
+
+.password-box{
+position:relative;
+}
+
+.eye{
+position:absolute;
+right:15px;
+top:12px;
+cursor:pointer;
+}
+
+.error{
+font-size:13px;
+color:red;
+margin-bottom:10px;
+}
+
+.success{
+font-size:13px;
+color:green;
+margin-bottom:10px;
+}
+
+.strength{
+font-size:13px;
+margin-bottom:10px;
+}
+
+.login-btn{
+background:#26a69a;
+border:none;
+color:white;
+padding:10px 30px;
+border-radius:30px;
+margin-top:10px;
+width:100%;
+}
+
+.login-right{
+flex:1;
+background:linear-gradient(120deg,#6dd5fa,#2980b9);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.login-right img{
+width:80%;
+}
+
+@media(max-width:768px){
+
+.login-card{
+flex-direction:column;
+width:90%;
+}
+
+.login-right{
+display:none;
+}
+
+}
+
+</style>
+
+
+<div class="login-wrapper">
+
+<div class="login-card">
+
+<div class="login-left">
+
+<h2>Create Account</h2>
+
+<form action="/signup" method="POST" onsubmit="return validateForm()">
+
+<div class="input-group">
+<input type="text"
+id="name"
+name="name"
+placeholder="Full Name"
+onkeypress="return onlyLetters(event)"
+oninput="validateName()"
+required>
+</div>
+<div id="nameError" class="error"></div>
+
+<div class="input-group">
+<input type="text" id="mobile" name="mobile" placeholder="Mobile Number" oninput="validateMobile()" required>
+</div>
+<div id="mobileError" class="error"></div>
+
+<div class="input-group">
+<input type="email" id="email" name="email" placeholder="Email" oninput="validateEmail()" required>
+</div>
+<div id="emailError" class="error"></div>
+
+<div class="password-box input-group">
+<input type="password" id="password" name="password" placeholder="Create Password" onkeyup="checkPasswordStrength()" required>
+<span class="eye" onclick="togglePassword('password')">👁</span>
+</div>
+
+<div id="strength" class="strength"></div>
+
+<div class="password-box input-group">
+<input type="password" id="confirm_password" placeholder="Confirm Password" onkeyup="checkConfirmPassword()" required>
+<span class="eye" onclick="togglePassword('confirm_password')">👁</span>
+</div>
+
+<div id="confirmError" class="error"></div>
+
+<button class="login-btn">Signup</button>
+
+</form>
+
+<div style="margin-top:15px;font-size:14px;">
+Already have an account?
+<a href="/login">Login</a>
+</div>
+
+</div>
+
+<div class="login-right">
+
+<img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<script>
+ 
+
+    
+function validateName(){
+
+var name=document.getElementById("name").value;
+var error=document.getElementById("nameError");
+
+if(/^[A-Za-z ]+$/.test(name)){
+error.innerHTML="";
+}else{
+error.innerHTML="Name must contain only letters";
+}
+
+}
+
+function validateMobile(){
+
+var mobile=document.getElementById("mobile").value;
+var error=document.getElementById("mobileError");
+
+var pattern=/^[6-9][0-9]{9}$/;
+
+if(pattern.test(mobile)){
+error.innerHTML="";
+}else{
+error.innerHTML="Enter valid 10 digit mobile number";
+}
+
+}
+
+function validateEmail(){
+
+var email=document.getElementById("email").value;
+var error=document.getElementById("emailError");
+
+var pattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if(pattern.test(email)){
+error.innerHTML="";
+}else{
+error.innerHTML="Enter valid email";
+}
+
+}
+
+function checkPasswordStrength(){
+
+var pass=document.getElementById("password").value;
+var strength=document.getElementById("strength");
+
+var strong=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+if(pass.length<8){
+
+strength.innerHTML="Password must be at least 8 characters";
+strength.style.color="red";
+
+}
+else if(strong.test(pass)){
+
+strength.innerHTML="Strong Password";
+strength.style.color="green";
+
+}
+else{
+
+strength.innerHTML="Use uppercase, lowercase, number & special character";
+strength.style.color="orange";
+
+}
+
+}
+
+function checkConfirmPassword(){
+
+var pass=document.getElementById("password").value;
+var confirm=document.getElementById("confirm_password").value;
+var error=document.getElementById("confirmError");
+
+if(pass===confirm){
+
+error.innerHTML="Passwords match";
+error.className="success";
+
+}
+else{
+
+error.innerHTML="Passwords do not match";
+error.className="error";
+
+}
+
+}
+
+function togglePassword(id){
+
+var input=document.getElementById(id);
+
+if(input.type==="password"){
+input.type="text";
+}else{
+input.type="password";
+}
+
+}
+
+function validateForm(){
+
+var pass=document.getElementById("password").value;
+var confirm=document.getElementById("confirm_password").value;
+
+if(pass!==confirm){
+
+alert("Passwords do not match");
+return false;
+
+}
+
+return true;
+
+}
+
+</script>
+
+{% endblock %}

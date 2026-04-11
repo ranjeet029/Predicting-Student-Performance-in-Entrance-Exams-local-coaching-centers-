@@ -1,0 +1,160 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<div class="card shadow">
+
+<div class="card-header bg-dark text-white">
+<h4 class="mb-0">Edit Student Details</h4>
+</div>
+
+<div class="card-body">
+
+<form method="POST">
+
+<div class="row g-3">
+
+<!-- Student ID -->
+
+<div class="col-12 col-md-6">
+<label class="form-label">Student ID</label>
+<input type="text" class="form-control" value="{{student.student_id}}" readonly>
+</div>
+
+<!-- Name -->
+
+<div class="col-12 col-md-6">
+<label class="form-label">Name</label>
+<input type="text" name="name" class="form-control" value="{{student.name}}">
+</div>
+
+<!-- Email -->
+
+<div class="col-12 col-md-6">
+<label class="form-label">Email</label>
+<input type="email" name="email" class="form-control" value="{{student.email}}">
+</div>
+
+<!-- Mobile -->
+
+<div class="col-12 col-md-6">
+<label class="form-label">Mobile</label>
+<input type="text" name="mobile" class="form-control" value="{{student.mobile}}">
+</div>
+
+<!-- Gender -->
+
+<div class="col-12 col-md-6">
+
+<label class="form-label">Gender</label>
+
+<select name="gender" class="form-select">
+
+<option value="">Select Gender</option>
+
+<option value="Male"
+{% if student.gender == "Male" %}selected{% endif %}>
+Male
+</option>
+
+<option value="Female"
+{% if student.gender == "Female" %}selected{% endif %}>
+Female
+</option>
+
+<option value="Other"
+{% if student.gender == "Other" %}selected{% endif %}>
+Other
+</option>
+
+</select>
+
+</div>
+
+<!-- DOB -->
+
+<div class="col-12 col-md-6">
+<label class="form-label">Date of Birth</label>
+<input type="date" name="dob" class="form-control" value="{{student.dob}}">
+</div>
+
+<!-- Father Name -->
+
+<div class="col-12 col-md-6">
+<label class="form-label">Father Name</label>
+<input type="text" name="father_name" class="form-control" value="{{student.father_name}}">
+</div>
+
+<!-- Batch -->
+
+<div class="col-12 col-md-6">
+
+<label class="form-label">Batch</label>
+
+<select name="batch" class="form-select">
+
+<option value="">Select Batch</option>
+
+<option value="NEET 2026"
+{% if student.batch == "NEET 2026" %}selected{% endif %}>
+NEET 2026
+</option>
+
+<option value="NEET 2027"
+{% if student.batch == "NEET 2027" %}selected{% endif %}>
+NEET 2027
+</option>
+
+<option value="JEE 2026"
+{% if student.batch == "JEE 2026" %}selected{% endif %}>
+IT JEE 2026
+</option>
+
+<option value="JEE 2027"
+{% if student.batch == "JEE 2027" %}selected{% endif %}>
+IT JEE 2027
+</option>
+
+<option value="Foundation"
+{% if student.batch == "Foundation" %}selected{% endif %}>
+Foundation
+</option>
+
+</select>
+
+</div>
+
+<!-- Address -->
+
+<div class="col-12">
+<label class="form-label">Address</label>
+<textarea name="address" class="form-control" rows="3">{{student.address}}</textarea>
+</div>
+
+</div>
+
+<!-- Buttons -->
+
+<div class="mt-4 text-center">
+
+<button class="btn btn-success px-4">
+Update Student
+</button>
+
+<a href="/admin_settings" class="btn btn-secondary px-4 ms-2">
+Back
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">Predicting Students Performance</h2>
+
+<div class="row g-4">
+
+<!-- RUN PREDICTION -->
+
+<div class="col-md-6">
+<div class="card p-4 shadow h-100">
+
+<h4 class="mb-3 text-center">Run AI Prediction</h4>
+
+<form action="/prediction_page" method="GET">
+
+<input type="hidden" name="run" value="1">
+
+<button class="btn btn-primary w-100">
+Run Prediction
+</button>
+
+</form>
+
+</div>
+</div>
+
+
+<!-- UPLOAD DATASET -->
+
+<div class="col-md-6">
+<div class="card p-4 shadow h-100">
+
+<h4 class="mb-3 text-center">Upload Dataset</h4>
+
+<form action="/upload_dataset" method="POST" enctype="multipart/form-data">
+
+<input type="file"
+name="file"
+class="form-control mb-3"
+accept=".csv"
+required>
+
+<button class="btn btn-success w-100">
+Upload Dataset
+</button>
+
+</form>
+
+</div>
+</div>
+
+</div>
+
+
+<hr class="my-4">
+
+
+<div class="card p-3 shadow">
+
+<h4 class="mb-3 text-center">Prediction Records</h4>
+
+<div class="table-responsive">
+
+<table class="table table-bordered table-striped table-hover">
+
+<thead class="table-dark">
+
+<tr>
+
+{% for col in columns %}
+<th>{{ col }}</th>
+{% endfor %}
+
+<th>AI Recommendation</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for row in students %}
+
+<!-- AUTO FAIL DETECTION -->
+
+{% set fail = false %}
+
+{% for key,value in row.items() %}
+
+{% if value is number and value < 33 %}
+
+{% set fail = true %}
+
+{% endif %}
+
+{% endfor %}
+
+{% set subject = row.get('Weak_Subject','') | lower %}
+
+<tr>
+
+{% for col in columns %}
+
+<td>
+
+<!-- RANK STYLE -->
+
+{% if col == "Rank" %}
+
+{% if row[col] == 1 %}
+<span class="badge bg-warning text-dark">🥇 {{ row[col] }}</span>
+
+{% elif row[col] == 2 %}
+<span class="badge bg-secondary">🥈 {{ row[col] }}</span>
+
+{% elif row[col] == 3 %}
+<span class="badge bg-danger">🥉 {{ row[col] }}</span>
+
+{% else %}
+<span class="badge bg-info">{{ row[col] }}</span>
+
+{% endif %}
+
+<!-- WEAK SUBJECT -->
+
+{% elif col == "Weak_Subject" %}
+
+{% if fail %}
+
+<span class="badge bg-danger">
+FAIL
+</span>
+
+{% else %}
+
+<span class="badge bg-danger">
+{{ row.get(col,'') }}
+</span>
+
+{% endif %}
+
+{% else %}
+
+{{ row.get(col,'') }}
+
+{% endif %}
+
+</td>
+
+{% endfor %}
+
+
+<!-- AI RECOMMENDATION -->
+
+<td>
+
+{% if fail %}
+
+<b style="color:red;">⚠ Student is FAIL</b>
+
+<ul style="margin:0;padding-left:18px;">
+<li>Study minimum 4 hours daily</li>
+<li>Attend remedial classes</li>
+<li>Revise weak concepts</li>
+<li>Practice previous year questions</li>
+<li>Take weekly mock tests</li>
+</ul>
+
+{% elif subject == 'physics' %}
+
+<b>Weak Subject: Physics</b>
+
+<ul style="margin:0;padding-left:18px;">
+<li>Practice 2 hours daily</li>
+<li>Solve 20 numericals</li>
+<li>Attend extra class</li>
+</ul>
+
+{% elif subject == 'math' or subject == 'maths' %}
+
+<b>Weak Subject: Maths</b>
+
+<ul style="margin:0;padding-left:18px;">
+<li>Revise formulas daily</li>
+<li>Solve 30 practice questions</li>
+<li>Attend doubt clearing session</li>
+</ul>
+
+{% elif subject == 'chemistry' %}
+
+<b>Weak Subject: Chemistry</b>
+
+<ul style="margin:0;padding-left:18px;">
+<li>Revise reactions</li>
+<li>Practice MCQs</li>
+<li>Focus on NCERT</li>
+</ul>
+
+{% elif subject == 'biology' %}
+
+<b>Weak Subject: Biology</b>
+
+<ul style="margin:0;padding-left:18px;">
+<li>Study diagrams</li>
+<li>Revise theory</li>
+<li>Practice objective questions</li>
+</ul>
+
+{% else %}
+
+<ul style="margin:0;padding-left:18px;">
+<li>Maintain regular study</li>
+<li>Attempt mock tests</li>
+<li>Revise weak topics</li>
+</ul>
+
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

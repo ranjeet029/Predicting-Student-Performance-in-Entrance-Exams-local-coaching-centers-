@@ -1,0 +1,105 @@
+<style>
+
+.student-navbar{
+background:#2c3e50;
+}
+
+.student-navbar .navbar-brand{
+color:white;
+font-weight:600;
+}
+
+.profile-img{
+width:35px;
+height:35px;
+border-radius:50%;
+object-fit:cover;
+margin-left:15px;
+border:2px solid white;
+}
+
+.navbar-toggler{
+border:none;
+}
+
+.navbar-toggler-icon{
+filter:invert(1);
+}
+
+</style>
+
+
+<nav class="navbar navbar-expand-lg student-navbar">
+
+<div class="container">
+
+<!-- MOBILE TOGGLER (Left side) -->
+<button class="navbar-toggler me-2"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#studentMenu">
+
+<span class="navbar-toggler-icon"></span>
+
+</button>
+
+<!-- DASHBOARD TITLE -->
+<a class="navbar-brand" href="/student_dashboard">
+Student Dashboard
+</a>
+
+<!-- RIGHT SIDE PROFILE IMAGE -->
+<div class="ms-auto d-lg-none">
+<img src="{{ url_for('static', filename='profile/' + data.photo) if data.photo else url_for('static', filename='default_user.png') }}"
+class="profile-img">
+</div>
+
+<!-- MENU -->
+<div class="collapse navbar-collapse" id="studentMenu">
+
+<ul class="navbar-nav ms-auto align-items-lg-center">
+
+<li class="nav-item mb-2 mb-lg-0">
+<a href="/student_dashboard"
+class="btn btn-warning btn-sm me-lg-2">
+Home
+</a>
+</li>
+
+
+<li class="nav-item mb-2 mb-lg-0">
+<a href="/leaderboard"
+class="btn btn-warning btn-sm me-lg-2">
+Leaderboard
+</a>
+</li>
+
+
+
+<li class="nav-item mb-2 mb-lg-0">
+<a href="/profile"
+class="btn btn-warning btn-sm me-lg-2">
+Profile
+</a>
+</li>
+
+<li class="nav-item mb-2 mb-lg-0">
+<a href="/logout"
+class="btn btn-danger btn-sm me-lg-3">
+Logout
+</a>
+</li>
+
+<!-- DESKTOP PROFILE IMAGE -->
+<li class="nav-item d-none d-lg-block">
+<img src="{{ url_for('static', filename='profile/' + data.photo) if data.photo else url_for('static', filename='default_user.png') }}"
+class="profile-img">
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+</nav>

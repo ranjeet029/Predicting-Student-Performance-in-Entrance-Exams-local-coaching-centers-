@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+.login-wrapper{
+min-height:90vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(120deg,#d7f0ef,#f4f6f9);
+}
+
+.login-card{
+width:900px;
+background:white;
+border-radius:10px;
+box-shadow:0px 8px 25px rgba(0,0,0,0.15);
+display:flex;
+overflow:hidden;
+}
+
+/* LEFT SIDE */
+
+.login-left{
+flex:1;
+padding:60px;
+}
+
+.login-left h2{
+margin-bottom:30px;
+font-weight:600;
+}
+
+.input-group{
+margin-bottom:20px;
+}
+
+.input-group input{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:30px;
+outline:none;
+}
+
+/* BUTTON */
+
+.login-btn{
+background:#ff5722;
+border:none;
+color:white;
+padding:10px 30px;
+border-radius:30px;
+margin-top:10px;
+}
+
+/* RIGHT SIDE */
+
+.login-right{
+flex:1;
+background:linear-gradient(120deg,#ff9966,#ff5e62);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.login-right img{
+width:80%;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+.login-card{
+flex-direction:column;
+width:90%;
+}
+
+.login-right{
+display:none;
+}
+
+}
+
+</style>
+
+
+<div class="login-wrapper">
+
+<div class="login-card">
+
+<!-- LEFT FORM -->
+
+<div class="login-left">
+
+<h2>Admin Login</h2>
+
+<form method="POST">
+
+<div class="input-group">
+<input type="text" name="username" placeholder="Admin Username" required>
+</div>
+
+<div class="input-group">
+<input type="password" name="password" placeholder="Password" required>
+</div>
+
+<button class="login-btn">Login</button>
+
+</form>
+
+{% if error %}
+<p style="color:red;margin-top:10px;">{{error}}</p>
+{% endif %}
+
+</div>
+
+
+<!-- RIGHT IMAGE -->
+
+<div class="login-right">
+
+<img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

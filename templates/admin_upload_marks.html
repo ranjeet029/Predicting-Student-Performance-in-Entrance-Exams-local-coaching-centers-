@@ -1,0 +1,33 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<h3 class="mb-4">Upload Student Marks (Excel / CSV)</h3>
+
+<div class="card p-4 shadow">
+
+<form action="/upload_marks" method="POST" enctype="multipart/form-data">
+
+<div class="mb-3">
+
+<input type="file"
+name="file"
+class="form-control"
+accept=".csv,.xlsx"
+required>
+
+</div>
+
+<button class="btn btn-success">
+Upload Marks
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

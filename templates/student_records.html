@@ -1,0 +1,195 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<h2 class="mb-3">Student Marks Record</h2>
+
+<form method="GET" action="/student_records" class="mb-3">
+
+<div class="input-group">
+
+<input type="text"
+name="search"
+class="form-control"
+placeholder="Search by Name or Student ID"
+value="{{request.args.get('search','')}}">
+
+<button class="btn btn-primary">Search</button>
+
+<a href="/student_records" class="btn btn-secondary">Reset</a>
+
+</div>
+
+</form>
+
+
+<!-- DOWNLOAD BUTTONS -->
+
+<div class="mb-3">
+
+<button class="btn btn-success btn-sm" onclick="exportCSV()">CSV</button>
+
+<button class="btn btn-info btn-sm" onclick="exportExcel()">Excel</button>
+
+<button class="btn btn-danger btn-sm" onclick="exportPDF()">PDF</button>
+
+</div>
+
+
+<div class="table-responsive">
+
+<table id="marksTable" class="table table-bordered table-striped table-hover">
+
+<thead class="table-dark">
+
+<tr>
+<th>Student ID</th>
+<th>Name</th>
+<th>Maths</th>
+<th>Physics</th>
+<th>Chemistry</th>
+<th>Biology</th>
+<th>Total</th>
+<th>Rank</th>
+<th class="no-export">Action</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for s in students %}
+
+<tr {% if s.rank_no == 1 %} style="background:#fff3cd;font-weight:bold;" {% endif %}>
+
+<td>{{s.student_id}}</td>
+<td>{{s.name}}</td>
+<td>{{s.maths}}</td>
+<td>{{s.physics}}</td>
+<td>{{s.chemistry}}</td>
+<td>{{s.biology}}</td>
+<td>{{s.total}}</td>
+<td>#{{s.rank_no}}</td>
+
+<td class="no-export">
+
+<a href="/edit_marks/{{s.student_id}}" class="btn btn-warning btn-sm">
+Edit
+</a>
+
+<a href="/delete_marks/{{s.student_id}}"
+class="btn btn-danger btn-sm"
+onclick="return confirm('Delete this record?')">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<!-- LIBRARIES -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+
+<script>
+
+function getTableData(){
+
+let table = document.getElementById("marksTable")
+
+let rows = table.querySelectorAll("tr")
+
+let data = []
+
+rows.forEach((row,index)=>{
+
+let cols = row.querySelectorAll("th:not(.no-export), td:not(.no-export)")
+
+let rowData = []
+
+cols.forEach(col=>{
+rowData.push(col.innerText)
+})
+
+data.push(rowData)
+
+})
+
+return data
+
+}
+
+
+function exportCSV(){
+
+let data = getTableData()
+
+let csv = data.map(e => e.join(",")).join("\n")
+
+let blob = new Blob([csv],{type:"text/csv"})
+
+let link = document.createElement("a")
+
+link.download = "student_marks.csv"
+
+link.href = window.URL.createObjectURL(blob)
+
+link.click()
+
+}
+
+
+function exportExcel(){
+
+let data = getTableData()
+
+let ws = XLSX.utils.aoa_to_sheet(data)
+
+let wb = XLSX.utils.book_new()
+
+XLSX.utils.book_append_sheet(wb, ws, "Marks")
+
+XLSX.writeFile(wb,"student_marks.xlsx")
+
+}
+
+
+function exportPDF(){
+
+const { jsPDF } = window.jspdf
+
+let doc = new jsPDF()
+
+let data = getTableData()
+
+let headers = data.shift()
+
+doc.autoTable({
+
+head:[headers],
+
+body:data
+
+})
+
+doc.save("student_marks.pdf")
+
+}
+
+</script>
+
+{% endblock %}

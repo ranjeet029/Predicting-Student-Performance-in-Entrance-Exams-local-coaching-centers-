@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "student_navbar.html" %}
+
+<div class="container mt-5">
+
+<style>
+
+.dashboard-cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+margin-bottom:30px;
+}
+
+.stat-card{
+padding:25px;
+border-radius:12px;
+color:white;
+box-shadow:0 6px 20px rgba(0,0,0,0.15);
+transition:0.3s;
+}
+
+.stat-card:hover{
+transform:translateY(-5px);
+}
+
+.card-score{
+background:linear-gradient(135deg,#667eea,#764ba2);
+}
+
+.card-rank{
+background:linear-gradient(135deg,#f7971e,#ffd200);
+}
+
+.card-weak{
+background:linear-gradient(135deg,#ff416c,#ff4b2b);
+}
+
+.card-grade{
+background:linear-gradient(135deg,#00c6ff,#0072ff);
+}
+
+.stat-title{
+font-size:14px;
+opacity:0.9;
+}
+
+.stat-value{
+font-size:28px;
+font-weight:bold;
+margin-top:5px;
+}
+
+.recommend-card{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 15px rgba(0,0,0,0.1);
+margin-top:25px;
+}
+
+/* Leaderboard animation */
+
+.leaderboard-table tbody tr{
+transition:0.3s;
+}
+
+.leaderboard-table tbody tr:hover{
+transform:scale(1.02);
+background:#f8f9fa;
+}
+
+.gold{
+color:#ffd700;
+font-size:20px;
+animation:glowGold 1.5s infinite alternate;
+}
+
+.silver{
+color:#c0c0c0;
+font-size:18px;
+}
+
+.bronze{
+color:#cd7f32;
+font-size:18px;
+}
+
+@keyframes glowGold{
+
+from{
+text-shadow:0 0 5px gold;
+}
+
+to{
+text-shadow:0 0 15px gold;
+}
+
+}
+
+</style>
+
+
+<!-- SUBJECT CALCULATION -->
+
+{% set subjects = {
+'Maths': marks.maths,
+'Physics': marks.physics,
+'Chemistry': marks.chemistry,
+'Biology': marks.biology
+} %}
+
+{% set weak_subject = subjects | dictsort(by='value') | first %}
+{% set weak = weak_subject[0] %}
+
+
+<!-- DASHBOARD CARDS -->
+
+<div class="dashboard-cards">
+
+<div class="stat-card card-score">
+<div class="stat-title">Total Score</div>
+<div class="stat-value">{{marks.total}} / 400</div>
+</div>
+
+<div class="stat-card card-rank">
+<div class="stat-title">Rank Position</div>
+<div class="stat-value">
+
+{% if marks.rank_no %}
+#{{marks.rank_no}}
+{% else %}
+-
+{% endif %}
+
+</div>
+</div>
+
+<div class="stat-card card-weak">
+<div class="stat-title">Weak Subject</div>
+<div class="stat-value">{{weak}}</div>
+</div>
+
+<div class="stat-card card-grade">
+
+<div class="stat-title">Performance Grade</div>
+
+<div class="stat-value">
+
+{% if marks.total >= 350 %}
+A+
+{% elif marks.total >= 300 %}
+A
+{% elif marks.total >= 250 %}
+B
+{% else %}
+C
+{% endif %}
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- SUBJECT PERFORMANCE CHART -->
+
+<div class="card p-4 mt-4 shadow">
+
+<h4 class="text-center mb-3">📊 Subject Performance</h4>
+
+<canvas id="marksChart"></canvas>
+
+</div>
+
+
+<!-- AI RECOMMENDATION -->
+
+<div class="recommend-card">
+
+<h4>🧠 AI Study Recommendation</h4>
+
+<p>
+Your weakest subject is <b>{{weak}}</b>.
+</p>
+
+<ul>
+
+<li>Practice at least <b>20 questions daily</b></li>
+
+<li>Focus on <b>concept revision</b></li>
+
+<li>Take <b>2 mock tests per week</b></li>
+
+<li>Review mistakes from previous tests</li>
+
+</ul>
+
+</div>
+
+
+<!-- LEADERBOARD PREVIEW -->
+
+<div class="card p-4 mt-4 shadow">
+
+<h4 class="text-center mb-3">🏆 Top Students</h4>
+
+<table class="table table-bordered text-center leaderboard-table">
+
+<thead class="table-dark">
+
+<tr>
+<th>Rank</th>
+<th>Student ID</th>
+<th>Name</th>
+<th>Total</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for s in leaderboard[:5] %}
+
+<tr>
+
+<td>
+
+{% if s.rank_no == 1 %}
+<span class="gold">👑🥇</span>
+{% elif s.rank_no == 2 %}
+<span class="silver">🥈</span>
+{% elif s.rank_no == 3 %}
+<span class="bronze">🥉</span>
+{% else %}
+#{{s.rank_no}}
+{% endif %}
+
+</td>
+
+<td>{{s.student_id}}</td>
+
+<td>{{s.name}}</td>
+
+<td>{{s.total}}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ctx=document.getElementById('marksChart')
+
+new Chart(ctx,{
+type:'bar',
+data:{
+labels:['Maths','Physics','Chemistry','Biology'],
+datasets:[{
+label:'Marks',
+data:[
+{{marks.maths}},
+{{marks.physics}},
+{{marks.chemistry}},
+{{marks.biology}}
+],
+backgroundColor:[
+'#667eea',
+'#f7971e',
+'#ff416c',
+'#00c6ff'
+],
+borderWidth:1
+}]
+},
+options:{
+responsive:true,
+plugins:{
+legend:{
+display:false
+}
+},
+scales:{
+y:{
+beginAtZero:true,
+max:100
+}
+}
+}
+})
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+<div class="container mt-4">
+
+<h3>Add New Student</h3>
+
+<form id="studentForm" enctype="multipart/form-data">
+
+<div class="row">
+
+<!-- PROFILE PHOTO -->
+
+<div class="col-md-12 text-center mb-3">
+
+<img id="previewImage"
+src="{{ url_for('static', filename='default_user.png') }}"
+width="140"
+height="140"
+style="border-radius:50%;object-fit:cover;">
+
+</div>
+
+<div class="col-md-12 mb-3">
+
+<label>Upload Profile Photo</label>
+
+<input type="file"
+id="photoInput"
+class="form-control">
+
+</div>
+
+
+<div class="col-md-6 mb-3">
+<label>Name</label>
+<input type="text" name="name" class="form-control" required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Email</label>
+<input type="email" name="email" class="form-control" required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Mobile</label>
+<input type="text" name="mobile" class="form-control" required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Gender</label>
+
+<select name="gender" class="form-control">
+
+<option value="">Select</option>
+<option>Male</option>
+<option>Female</option>
+
+</select>
+
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Batch</label>
+
+<select name="batch" class="form-control">
+
+<option>IT JEE 2026</option>
+<option>IT JEE 2027</option>
+<option>NEET 2026</option>
+<option>NEET 2027</option>
+<option>Foundation</option>
+
+</select>
+
+</div>
+
+<div class="col-md-12 mb-3">
+<label>Address</label>
+<textarea name="address" class="form-control"></textarea>
+</div>
+
+</div>
+
+<button class="btn btn-success">
+Create Student
+</button>
+
+<a href="/admin_settings" class="btn btn-secondary">
+Back
+</a>
+
+</form>
+
+</div>
+
+<!-- Crop Modal -->
+
+<div class="modal fade" id="cropModal">
+
+<div class="modal-dialog modal-lg">
+
+<div class="modal-content">
+
+<div class="modal-header">
+<h5>Crop Image</h5>
+</div>
+
+<div class="modal-body">
+
+<img id="cropImage" style="max-width:100%;">
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-primary" id="cropBtn">
+Crop & Use
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script>
+
+let cropper
+let croppedBlob
+
+// IMAGE SELECT
+
+document.getElementById("photoInput").addEventListener("change",function(e){
+
+let file=e.target.files[0]
+
+let reader=new FileReader()
+
+reader.onload=function(event){
+
+document.getElementById("cropImage").src=event.target.result
+
+let modal=new bootstrap.Modal(document.getElementById("cropModal"))
+
+modal.show()
+
+setTimeout(()=>{
+
+cropper=new Cropper(document.getElementById("cropImage"),{
+
+aspectRatio:1,
+viewMode:1
+
+})
+
+},500)
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+
+// CROP IMAGE
+
+document.getElementById("cropBtn").addEventListener("click",function(){
+
+let canvas=cropper.getCroppedCanvas({
+
+width:300,
+height:300
+
+})
+
+canvas.toBlob(function(blob){
+
+croppedBlob=blob
+
+document.getElementById("previewImage").src=URL.createObjectURL(blob)
+
+})
+
+bootstrap.Modal.getInstance(document.getElementById("cropModal")).hide()
+
+})
+
+
+// AJAX FORM SUBMIT
+
+document.getElementById("studentForm").addEventListener("submit",function(e){
+
+e.preventDefault()
+
+let formData=new FormData(this)
+
+if(croppedBlob){
+
+formData.append("photo",croppedBlob,"profile.jpg")
+
+}
+
+fetch("/add_student_admin",{
+
+method:"POST",
+body:formData
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+alert(data.message)
+
+location.reload()
+
+})
+
+})
+
+</script>
+
+{% endblock %}

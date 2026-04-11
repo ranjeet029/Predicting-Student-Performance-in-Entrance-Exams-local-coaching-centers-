@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+.hero{
+background: linear-gradient(120deg,#1f2d3d,#3a6073);
+color:white;
+padding:120px 20px;
+text-align:center;
+}
+
+.hero h1{
+font-size:48px;
+font-weight:bold;
+}
+
+.hero p{
+font-size:18px;
+margin-top:15px;
+}
+
+.btn-custom{
+padding:12px 30px;
+border-radius:30px;
+font-weight:500;
+}
+
+/* Dashboard Preview */
+
+.dashboard-preview{
+padding:70px 20px;
+background:#f4f6f9;
+}
+
+.preview-box{
+background:#fff;
+border-radius:12px;
+box-shadow:0px 6px 20px rgba(0,0,0,0.15);
+padding:25px;
+transition:0.3s;
+}
+
+.preview-box:hover{
+transform:translateY(-5px);
+}
+
+/* Features */
+
+.features{
+padding:70px 20px;
+}
+
+.feature-card{
+border:none;
+border-radius:12px;
+box-shadow:0px 4px 15px rgba(0,0,0,0.1);
+padding:25px;
+transition:0.3s;
+}
+
+.feature-card:hover{
+transform:translateY(-6px);
+}
+
+.feature-icon{
+font-size:35px;
+margin-bottom:10px;
+}
+
+/* Courses */
+.courses{
+padding:70px 20px;
+background:white;
+}
+
+.course-card{
+background:#fff;
+padding:25px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.15);
+text-align:center;
+transition:0.3s;
+}
+
+.course-card:hover{
+transform:translateY(-6px);
+}
+
+.course-img{
+width:70px;
+margin-bottom:10px;
+}
+
+.rating{
+color:#f1c40f;
+font-size:18px;
+}
+</style>
+
+
+<!-- HERO -->
+
+<section class="hero">
+
+<div class="container">
+
+<h1>Apex Institute</h1>
+
+<p>AI Powered Student Performance Prediction System</p>
+
+<div class="mt-4">
+
+<a href="/signup" class="btn btn-warning btn-custom m-2">
+Create Account
+</a>
+
+<a href="/login" class="btn btn-light btn-custom m-2">
+Student Login
+</a>
+
+<a href="/admin_login" class="btn btn-outline-light btn-custom m-2">
+Admin Panel
+</a>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- DASHBOARD PREVIEW -->
+
+<section class="dashboard-preview">
+
+<div class="container">
+
+<h2 class="text-center mb-5">Live Dashboard Preview</h2>
+
+<div class="row text-center">
+
+<div class="col-md-4">
+
+<div class="preview-box">
+
+<h5>Total Students</h5>
+
+<h2>{{ total_students }}</h2>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="preview-box">
+
+<h5>Average Score</h5>
+
+<h2>{{ avg_score }}%</h2>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="preview-box">
+
+<h5>Top Rank</h5>
+
+<h2>#{{ top_rank }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+
+<!-- COURSES SLIDER -->
+<!-- POPULAR COURSES -->
+
+<section class="courses">
+
+<div class="container">
+
+<h2 class="text-center mb-5">Popular Courses</h2>
+
+<div id="courseSlider" class="carousel slide" data-bs-ride="carousel">
+
+<div class="carousel-inner">
+
+<!-- Slide 1 -->
+
+<div class="carousel-item active">
+
+<div class="row">
+
+<div class="col-md-4">
+
+<div class="course-card">
+
+<img src="https://img.icons8.com/color/96/math.png" class="course-img">
+
+<h4>JEE Preparation</h4>
+
+<p class="text-muted">Physics, Chemistry & Maths</p>
+
+<p>👨‍🏫 Faculty: Dr. Sharma</p>
+
+<p>⏱ Duration: 12 Months</p>
+
+<div class="rating">
+⭐ ⭐ ⭐ ⭐ ⭐
+</div>
+
+<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
+
+</div>
+
+</div>
+
+
+<div class="col-md-4">
+
+<div class="course-card">
+
+
+<div class="course-icon">🧬</div>
+
+<h4>NEET Preparation</h4>
+
+<p class="text-muted">Biology, Chemistry & Physics</p>
+
+<p>👨‍🏫 Faculty: Dr. Gupta</p>
+
+<p>⏱ Duration: 12 Months</p>
+
+<div class="rating">
+⭐ ⭐ ⭐ ⭐ ⭐
+</div>
+
+<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
+
+</div>
+
+</div>
+
+
+<div class="col-md-4">
+
+<div class="course-card">
+
+<img src="https://img.icons8.com/color/96/school.png" class="course-img">
+
+<h4>Foundation Course</h4>
+
+<p class="text-muted">Class 9-10 Preparation</p>
+
+<p>👨‍🏫 Faculty: Mr. Raj</p>
+
+<p>⏱ Duration: 6 Months</p>
+
+<div class="rating">
+⭐ ⭐ ⭐ ⭐
+</div>
+
+<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Slide 2 -->
+
+<div class="carousel-item">
+
+<div class="row">
+
+<div class="col-md-4">
+
+<div class="course-card">
+
+<img src="https://img.icons8.com/color/96/test-passed.png" class="course-img">
+
+<h4>Test Series</h4>
+
+<p class="text-muted">Weekly Mock Tests</p>
+
+<p>👨‍🏫 Faculty: Team Apex</p>
+
+<p>⏱ Duration: 3 Months</p>
+
+<div class="rating">
+⭐ ⭐ ⭐ ⭐
+</div>
+
+<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
+
+</div>
+
+</div>
+
+
+<div class="col-md-4">
+
+<div class="course-card">
+
+<img src="https://img.icons8.com/color/96/book.png" class="course-img">
+
+<h4>Crash Course</h4>
+
+<p class="text-muted">Fast Revision Program</p>
+
+<p>👨‍🏫 Faculty: Dr. Verma</p>
+
+<p>⏱ Duration: 2 Months</p>
+
+<div class="rating">
+⭐ ⭐ ⭐ ⭐ ⭐
+</div>
+
+<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
+
+</div>
+
+</div>
+
+
+<div class="col-md-4">
+
+<div class="course-card">
+
+<img src="https://img.icons8.com/color/96/artificial-intelligence.png" class="course-img">
+
+<h4>AI Performance Coaching</h4>
+
+<p class="text-muted">AI Based Study Plan</p>
+
+<p>👨‍🏫 Faculty: AI Mentor</p>
+
+<p>⏱ Duration: Flexible</p>
+
+<div class="rating">
+⭐ ⭐ ⭐ ⭐ ⭐
+</div>
+
+<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<button class="carousel-control-prev" type="button" data-bs-target="#courseSlider" data-bs-slide="prev">
+
+<span class="carousel-control-prev-icon"></span>
+
+</button>
+
+<button class="carousel-control-next" type="button" data-bs-target="#courseSlider" data-bs-slide="next">
+
+<span class="carousel-control-next-icon"></span>
+
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- FEATURES -->
+
+<section class="features">
+
+<div class="container">
+
+<h2 class="text-center mb-5">System Features</h2>
+
+<div class="row g-4">
+
+<div class="col-md-4">
+
+<div class="feature-card text-center">
+
+<div class="feature-icon">🤖</div>
+
+<h4>AI Prediction</h4>
+
+<p>Predict student exam performance using machine learning.</p>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="feature-card text-center">
+
+<div class="feature-icon">📊</div>
+
+<h4>Performance Analytics</h4>
+
+<p>Interactive charts for subject-wise analysis.</p>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="feature-card text-center">
+
+<div class="feature-icon">📈</div>
+
+<h4>Feature Importance</h4>
+
+<p>Identify factors affecting student success.</p>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="feature-card text-center">
+
+<div class="feature-icon">🏆</div>
+
+<h4>Leaderboard</h4>
+
+<p>Compare student rankings and results.</p>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="feature-card text-center">
+
+<div class="feature-icon">📂</div>
+
+<h4>Dataset Upload</h4>
+
+<p>Upload coaching datasets for AI training.</p>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="feature-card text-center">
+
+<div class="feature-icon">🎯</div>
+
+<h4>Coaching Insights</h4>
+
+<p>AI-driven recommendations for improvement.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+{% endblock %}

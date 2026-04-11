@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "student_navbar.html" %}
+
+<div class="container mt-4" style="max-width:700px">
+
+<h3 class="mb-4 text-center">Student Profile</h3>
+
+<form id="profileForm" method="POST" enctype="multipart/form-data">
+
+<div class="row">
+
+<!-- Profile Photo -->
+<div class="col-md-12 text-center mb-4">
+
+<img id="previewImage"
+src="{{ url_for('static', filename='profile/' + data.photo) if data.photo else url_for('static', filename='default_user.png') }}"
+width="120"
+height="120"
+style="border-radius:50%;object-fit:cover;">
+
+</div>
+
+<!-- Student ID -->
+<div class="col-md-6 mb-3">
+<label>Student ID</label>
+<input type="text"
+name="student_id"
+class="form-control"
+value="{{data.student_id}}"
+readonly>
+</div>
+
+<!-- Student Name -->
+<div class="col-md-6 mb-3">
+<label>Student Name</label>
+<input type="text"
+name="name"
+class="form-control"
+value="{{data.name}}"
+readonly>
+</div>
+
+<!-- Mobile -->
+<div class="col-md-6 mb-3">
+<label>Mobile Number</label>
+<input type="text"
+name="mobile"
+class="form-control"
+value="{{data.mobile}}"
+readonly>
+</div>
+
+<!-- Email -->
+<div class="col-md-6 mb-3">
+<label>Email</label>
+<input type="email"
+name="email"
+class="form-control"
+value="{{data.email}}"
+readonly>
+</div>
+
+<!-- Gender -->
+<div class="col-md-6 mb-3">
+<label>Gender</label>
+<select name="gender" class="form-control">
+<option value="">Select Gender</option>
+<option value="Male" {% if data.gender == "Male" %}selected{% endif %}>Male</option>
+<option value="Female" {% if data.gender == "Female" %}selected{% endif %}>Female</option>
+<option value="Other" {% if data.gender == "Other" %}selected{% endif %}>Other</option>
+</select>
+</div>
+
+<!-- DOB -->
+<div class="col-md-6 mb-3">
+<label>Date of Birth</label>
+<input type="date"
+name="dob"
+class="form-control"
+value="{{ data.dob if data.dob else '' }}">
+</div>
+
+<!-- Father Name -->
+<div class="col-md-6 mb-3">
+<label>Father Name</label>
+<input type="text"
+name="father_name"
+class="form-control"
+value="{{data.father_name}}">
+</div>
+
+<!-- Batch -->
+<div class="col-md-6 mb-3">
+<label>Batch</label>
+
+<select name="batch" class="form-control">
+
+<option value="">Select Batch</option>
+
+<option value="ITJEE 2026" {% if data.batch == "ITJEE 2026" %}selected{% endif %}>ITJEE 2026</option>
+<option value="ITJEE 2027" {% if data.batch == "ITJEE 2027" %}selected{% endif %}>ITJEE 2027</option>
+<option value="NEET 2026" {% if data.batch == "NEET 2026" %}selected{% endif %}>NEET 2026</option>
+<option value="NEET 2027" {% if data.batch == "NEET 2027" %}selected{% endif %}>NEET 2027</option>
+<option value="Foundation" {% if data.batch == "Foundation" %}selected{% endif %}>Foundation</option>
+
+</select>
+
+</div>
+
+<!-- Admission Date -->
+<div class="col-md-6 mb-3">
+<label>Admission Date</label>
+<input type="date"
+name="admission_date"
+class="form-control"
+value="{{ data.admission_date if data.admission_date else '' }}">
+</div>
+
+<!-- Address -->
+<div class="col-md-12 mb-3">
+<label>Address</label>
+<textarea name="address"
+class="form-control">{{data.address}}</textarea>
+</div>
+
+<!-- Photo Upload -->
+<div class="col-md-12 mb-3">
+<label>Update Profile Photo</label>
+<input type="file"
+name="photo"
+id="photoInput"
+class="form-control">
+</div>
+
+</div>
+
+<div class="text-center">
+<button class="btn btn-success px-4">
+Update Profile
+</button>
+</div>
+
+</form>
+
+
+<hr class="my-4">
+
+
+<!-- CHANGE PASSWORD -->
+
+<h4 class="text-center mb-3">Change Password</h4>
+
+<form id="passwordForm">
+
+<div class="row">
+
+<div class="col-md-12 mb-3">
+<label>Current Password</label>
+<input type="password" name="current_password" class="form-control" required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>New Password</label>
+<input type="password" name="new_password" class="form-control" required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Confirm Password</label>
+<input type="password" name="confirm_password" class="form-control" required>
+</div>
+
+</div>
+
+<div class="text-center">
+<button class="btn btn-warning">
+Change Password
+</button>
+</div>
+
+</form>
+
+</div>
+
+
+<!-- Toast -->
+
+<div id="toast" style="
+position:fixed;
+top:20px;
+right:20px;
+background:#28a745;
+color:white;
+padding:12px 20px;
+border-radius:5px;
+display:none;">
+Updated Successfully
+</div>
+
+
+<script>
+
+document.getElementById("photoInput").addEventListener("change",function(){
+
+let file=this.files[0]
+
+if(file){
+
+let reader=new FileReader()
+
+reader.onload=function(e){
+document.getElementById("previewImage").src=e.target.result
+}
+
+reader.readAsDataURL(file)
+
+}
+
+})
+
+
+// PROFILE UPDATE AJAX
+
+document.getElementById("profileForm").addEventListener("submit",function(e){
+
+e.preventDefault()
+
+let formData=new FormData(this)
+
+fetch("/profile",{
+method:"POST",
+body:formData
+})
+.then(res=>res.text())
+.then(data=>{
+showToast()
+})
+
+})
+
+
+// PASSWORD CHANGE AJAX
+
+document.getElementById("passwordForm").addEventListener("submit",function(e){
+
+e.preventDefault()
+
+let formData=new FormData(this)
+
+fetch("/change_password",{
+method:"POST",
+body:formData
+})
+.then(res=>res.json())
+.then(data=>{
+alert(data.message)
+})
+
+})
+
+
+function showToast(){
+
+let toast=document.getElementById("toast")
+
+toast.style.display="block"
+
+setTimeout(()=>{
+toast.style.display="none"
+},3000)
+
+}
+
+</script>
+
+{% endblock %}
