@@ -14,7 +14,7 @@ from werkzeug.security import check_password_hash
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 import joblib
-# import csv
+import csv
 import os
 import string
 import random
@@ -1442,36 +1442,49 @@ def prediction_page():
 
     if run:
 
-        df = pd.read_csv("dataset/dataset.csv")
-        # with open("dataset/dataset.csv") as f:
-        # data = list(csv.DictReader(f))
+        path = "dataset/dataset.csv"
 
+        # dataset exist check
+        if not os.path.exists(path):
+            flash("Dataset not found. Upload dataset first.","danger")
+            return render_template(
+                "prediction_page.html",
+                students=[],
+                columns=[]
+            )
+
+        df = pd.read_csv(path)
+
+        # clean column names
         df.columns = df.columns.str.strip().str.lower()
-        
-        # remove unwanted unnamed columns
-        df = df.loc[:, ~df.columns.str.contains('^unnamed')]
-        numeric_cols = df.select_dtypes(include=['int64','float64']).columns
-         # CLEAN DATA
+
+        # remove unnamed columns
+        df = df.loc[:, ~df.columns.str.contains('^unnamed', case=False)]
+
+        # replace blank values
         df.replace("",0,inplace=True)
         df.fillna(0,inplace=True)
 
-        # numeric columns detect
+        # convert numeric columns safely
+        for col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="ignore")
+
+        # detect numeric columns
         numeric_cols = df.select_dtypes(include=['int64','float64']).columns
 
-        # columns जो subject नहीं हैं
+        # ignore non subject columns
         ignore_cols = [
             "id","age","attendance","study_hours","practice_hours",
             "internal_marks","result","rank","total","total_score"
         ]
 
-        # subject columns auto detect
-        # subject_cols = [c for c in numeric_cols if c not in ignore_cols]
+        # auto detect subjects
         subject_cols = [
-        c for c in numeric_cols
-        if c not in ignore_cols and not c.startswith("unnamed")
+            c for c in numeric_cols
+            if c not in ignore_cols
         ]
-        
-        # अगर subject detect नहीं हुआ
+
+        # fallback if subjects not detected
         if len(subject_cols) == 0:
             subject_cols = numeric_cols
 
@@ -1481,7 +1494,7 @@ def prediction_page():
         # ranking
         df["Rank"] = df["Total_Score"].rank(ascending=False).astype(int)
 
-        # weak subject
+        # weak subject detection
         df["Weak_Subject"] = df[subject_cols].idxmin(axis=1)
 
         # target score
@@ -1490,10 +1503,7 @@ def prediction_page():
         df["Target_Score"] = target
         df["Improvement_Needed"] = target - df["Total_Score"]
 
-        # topper prediction
-        topper = df.loc[df["Total_Score"].idxmax()]
-
-        # feature importance
+        # AI feature importance
         X = df[subject_cols]
         y = df["Total_Score"]
 
@@ -1515,7 +1525,6 @@ def prediction_page():
         chart_labels=chart_labels,
         chart_values=chart_values
     )
-    
 # ______________end _Prediction_page________________________________
            
     
