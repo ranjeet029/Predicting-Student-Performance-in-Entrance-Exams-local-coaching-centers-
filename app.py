@@ -27,11 +27,13 @@ app.secret_key="secretkey"
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 
-db=mysql.connector.connect(
-host="localhost",
-user="root",
-password="root1234",
-database="student_ai"
+
+
+db = mysql.connector.connect(
+    host=os.getenv("DB_HOST", "localhost"),
+    user=os.getenv("DB_USER", "root"),
+    password=os.getenv("DB_PASS", "root1234"),
+    database=os.getenv("DB_NAME", "student_ai")
 )
 
 # cursor=db.cursor()
