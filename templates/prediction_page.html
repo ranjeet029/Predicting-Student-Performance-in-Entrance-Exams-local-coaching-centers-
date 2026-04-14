@@ -2,13 +2,58 @@
 
 {% block content %}
 
+<style>
+
+/* TABLE SCROLL FIX */
+
+.table-container{
+width:100%;
+overflow-x:auto;
+}
+
+/* LARGE TABLE SAFE */
+
+.table-container table{
+min-width:1200px;
+white-space:nowrap;
+}
+
+/* SIDEBAR SAFE */
+
+.sidebar{
+width:230px;
+min-width:230px;
+flex-shrink:0;
+}
+
+/* MOBILE FIX */
+
+@media(max-width:768px){
+
+h2{
+font-size:22px;
+text-align:center;
+}
+
+.btn{
+width:100%;
+margin-bottom:10px;
+}
+
+}
+
+</style>
+
+
 <h2 class="mb-4">Predicting Students Performance</h2>
+
 
 <div class="row g-4">
 
 <!-- RUN PREDICTION -->
 
-<div class="col-md-6">
+<div class="col-lg-6 col-md-12">
+
 <div class="card p-4 shadow h-100">
 
 <h4 class="mb-3 text-center">Run AI Prediction</h4>
@@ -24,12 +69,14 @@ Run Prediction
 </form>
 
 </div>
+
 </div>
 
 
 <!-- UPLOAD DATASET -->
 
-<div class="col-md-6">
+<div class="col-lg-6 col-md-12">
+
 <div class="card p-4 shadow h-100">
 
 <h4 class="mb-3 text-center">Upload Dataset</h4>
@@ -49,6 +96,7 @@ Upload Dataset
 </form>
 
 </div>
+
 </div>
 
 </div>
@@ -59,11 +107,31 @@ Upload Dataset
 
 <div class="card p-3 shadow">
 
-<h4 class="mb-3 text-center">Prediction Records</h4>
+<div class="d-flex justify-content-between mb-3">
 
-<div class="table-responsive">
+<h4>Prediction Records</h4>
 
-<table class="table table-bordered table-striped table-hover">
+<div>
+
+<input type="text" id="searchInput"
+class="form-control"
+placeholder="Search student..."
+style="width:200px;display:inline-block;">
+
+<button onclick="downloadTable()"
+class="btn btn-success">
+Download Excel
+</button>
+
+</div>
+
+</div>
+
+
+<div class="table-container">
+
+<table id="predictionTable"
+class="table table-bordered table-striped table-hover">
 
 <thead class="table-dark">
 
@@ -83,29 +151,21 @@ Upload Dataset
 
 {% for row in students %}
 
-<!-- AUTO FAIL DETECTION -->
-
 {% set fail = false %}
 
 {% for key,value in row.items() %}
-
 {% if value is number and value < 33 %}
-
 {% set fail = true %}
-
 {% endif %}
-
 {% endfor %}
 
-{% set subject = row.get('Weak_Subject','') | lower %}
+{% set weak_subject = row.get('Weak_Subject','') %}
 
 <tr>
 
 {% for col in columns %}
 
 <td>
-
-<!-- RANK STYLE -->
 
 {% if col == "Rank" %}
 
@@ -123,8 +183,6 @@ Upload Dataset
 
 {% endif %}
 
-<!-- WEAK SUBJECT -->
-
 {% elif col == "Weak_Subject" %}
 
 {% if fail %}
@@ -136,7 +194,7 @@ FAIL
 {% else %}
 
 <span class="badge bg-danger">
-{{ row.get(col,'') }}
+{{ weak_subject }}
 </span>
 
 {% endif %}
@@ -152,8 +210,6 @@ FAIL
 {% endfor %}
 
 
-<!-- AI RECOMMENDATION -->
-
 <td>
 
 {% if fail %}
@@ -162,58 +218,21 @@ FAIL
 
 <ul style="margin:0;padding-left:18px;">
 <li>Study minimum 4 hours daily</li>
-<li>Attend remedial classes</li>
-<li>Revise weak concepts</li>
-<li>Practice previous year questions</li>
+<li>Focus on weak concepts</li>
+<li>Attend extra coaching</li>
+<li>Practice previous exam papers</li>
 <li>Take weekly mock tests</li>
-</ul>
-
-{% elif subject == 'physics' %}
-
-<b>Weak Subject: Physics</b>
-
-<ul style="margin:0;padding-left:18px;">
-<li>Practice 2 hours daily</li>
-<li>Solve 20 numericals</li>
-<li>Attend extra class</li>
-</ul>
-
-{% elif subject == 'math' or subject == 'maths' %}
-
-<b>Weak Subject: Maths</b>
-
-<ul style="margin:0;padding-left:18px;">
-<li>Revise formulas daily</li>
-<li>Solve 30 practice questions</li>
-<li>Attend doubt clearing session</li>
-</ul>
-
-{% elif subject == 'chemistry' %}
-
-<b>Weak Subject: Chemistry</b>
-
-<ul style="margin:0;padding-left:18px;">
-<li>Revise reactions</li>
-<li>Practice MCQs</li>
-<li>Focus on NCERT</li>
-</ul>
-
-{% elif subject == 'biology' %}
-
-<b>Weak Subject: Biology</b>
-
-<ul style="margin:0;padding-left:18px;">
-<li>Study diagrams</li>
-<li>Revise theory</li>
-<li>Practice objective questions</li>
 </ul>
 
 {% else %}
 
+<b>Weak Subject: {{ weak_subject }}</b>
+
 <ul style="margin:0;padding-left:18px;">
-<li>Maintain regular study</li>
-<li>Attempt mock tests</li>
-<li>Revise weak topics</li>
+<li>Revise {{ weak_subject }} concepts</li>
+<li>Practice daily questions</li>
+<li>Attend doubt sessions</li>
+<li>Take mock tests</li>
 </ul>
 
 {% endif %}
@@ -231,5 +250,51 @@ FAIL
 </div>
 
 </div>
+
+
+
+<script>
+
+/* SEARCH TABLE */
+
+document.getElementById("searchInput").addEventListener("keyup",function(){
+
+var filter=this.value.toLowerCase()
+
+var rows=document.querySelectorAll("#predictionTable tbody tr")
+
+rows.forEach(function(row){
+
+var text=row.innerText.toLowerCase()
+
+row.style.display=text.includes(filter) ? "" : "none"
+
+})
+
+})
+
+
+
+/* DOWNLOAD EXCEL */
+
+function downloadTable(){
+
+var table=document.getElementById("predictionTable")
+
+var html=table.outerHTML
+
+var url='data:application/vnd.ms-excel,' + encodeURIComponent(html)
+
+var link=document.createElement("a")
+
+link.href=url
+link.download="prediction_records.xls"
+
+link.click()
+
+}
+
+</script>
+
 
 {% endblock %}

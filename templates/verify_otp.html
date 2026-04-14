@@ -1,19 +1,306 @@
 {% extends "base.html" %}
-
 {% block content %}
 
-<div class="container mt-5 text-center">
+<style>
 
-<h2>Email Verification</h2>
+.otp-wrapper{
+height:90vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(120deg,#d7f0ef,#f4f6f9);
+}
 
-<form method="POST">
+.otp-card{
+width:420px;
+background:white;
+padding:40px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
+text-align:center;
+}
 
-<input type="text" name="otp" placeholder="Enter OTP">
+.otp-title{
+font-size:26px;
+font-weight:600;
+margin-bottom:10px;
+}
 
-<button class="btn btn-primary">Verify</button>
+.otp-sub{
+color:#666;
+margin-bottom:25px;
+}
+
+.otp-inputs{
+display:flex;
+justify-content:center;
+gap:10px;
+margin-bottom:20px;
+}
+
+.otp-inputs input{
+width:50px;
+height:50px;
+text-align:center;
+font-size:20px;
+border:1px solid #ccc;
+border-radius:10px;
+outline:none;
+}
+
+.otp-inputs input:focus{
+border-color:#7e57c2;
+box-shadow:0 0 5px #7e57c2;
+}
+
+.verify-btn{
+width:100%;
+background:#7e57c2;
+border:none;
+color:white;
+padding:12px;
+border-radius:30px;
+font-size:16px;
+cursor:pointer;
+}
+
+.timer{
+margin-top:15px;
+font-size:14px;
+color:#555;
+}
+
+.resend{
+margin-top:15px;
+font-size:14px;
+display:none;
+}
+
+.resend button{
+background:none;
+border:none;
+color:#7e57c2;
+font-weight:600;
+cursor:pointer;
+}
+
+.error-msg{
+color:red;
+font-size:14px;
+margin-top:10px;
+display:none;
+}
+
+.shake{
+animation:shake 0.4s;
+}
+
+@keyframes shake{
+0%{transform:translateX(0)}
+25%{transform:translateX(-6px)}
+50%{transform:translateX(6px)}
+75%{transform:translateX(-6px)}
+100%{transform:translateX(0)}
+}
+
+</style>
+
+
+<div class="otp-wrapper">
+
+<div class="otp-card" id="otpCard">
+
+<div class="otp-title">Verify OTP</div>
+
+<div class="otp-sub">
+Please enter One Time Password sent to your email
+</div>
+
+<form method="POST" id="otpForm">
+
+<div class="otp-inputs">
+
+<input type="text" maxlength="1" class="otp" inputmode="numeric">
+<input type="text" maxlength="1" class="otp" inputmode="numeric">
+<input type="text" maxlength="1" class="otp" inputmode="numeric">
+<input type="text" maxlength="1" class="otp" inputmode="numeric">
+<input type="text" maxlength="1" class="otp" inputmode="numeric">
+<input type="text" maxlength="1" class="otp" inputmode="numeric">
+
+</div>
+
+<input type="hidden" name="otp" id="finalOtp">
+
+<button class="verify-btn">Verify OTP</button>
 
 </form>
 
+<div class="error-msg" id="otpError">
+Wrong OTP
 </div>
+
+<div class="timer" id="timerBox">
+Resend OTP in <span id="time">60</span>s
+</div>
+
+<div class="resend" id="resendBox">
+<button onclick="resendOtp()">Resend OTP</button>
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const inputs=document.querySelectorAll(".otp");
+const finalOtp=document.getElementById("finalOtp");
+const form=document.getElementById("otpForm");
+const card=document.getElementById("otpCard");
+const error=document.getElementById("otpError");
+
+let attempts=0;
+
+inputs.forEach((input,index)=>{
+
+input.addEventListener("input",function(){
+
+if(this.value.length===1 && index<inputs.length-1){
+inputs[index+1].focus();
+}
+
+collectOtp();
+
+});
+
+input.addEventListener("keydown",function(e){
+
+if(e.key==="Backspace" && this.value==="" && index>0){
+inputs[index-1].focus();
+}
+
+});
+
+});
+
+
+function collectOtp(){
+
+let otp="";
+
+inputs.forEach(box=>{
+otp+=box.value;
+});
+
+finalOtp.value=otp;
+
+if(otp.length===6){
+
+attempts++;
+
+if(attempts>3){
+
+error.innerText="Too many attempts. Try again later.";
+error.style.display="block";
+return;
+
+}
+
+form.submit();
+
+}
+
+}
+
+
+/* Paste anywhere */
+
+document.addEventListener("paste",function(e){
+
+let paste=e.clipboardData.getData("text").trim();
+
+if(paste.length===6){
+
+inputs.forEach((box,i)=>{
+box.value=paste[i];
+});
+
+collectOtp();
+
+}
+
+});
+
+
+/* Timer */
+
+let time=60;
+
+let timer=setInterval(()=>{
+
+time--;
+
+document.getElementById("time").innerText=time;
+
+if(time<=0){
+
+clearInterval(timer);
+
+document.getElementById("timerBox").style.display="none";
+document.getElementById("resendBox").style.display="block";
+
+}
+
+},1000);
+
+
+/* Resend OTP AJAX */
+
+function resendOtp(){
+
+fetch("/resend_otp")
+.then(res=>res.text())
+.then(()=>{
+
+document.getElementById("resendBox").style.display="none";
+document.getElementById("timerBox").style.display="block";
+
+time=60;
+
+timer=setInterval(()=>{
+
+time--;
+
+document.getElementById("time").innerText=time;
+
+if(time<=0){
+
+clearInterval(timer);
+
+document.getElementById("timerBox").style.display="none";
+document.getElementById("resendBox").style.display="block";
+
+}
+
+},1000);
+
+});
+
+}
+
+
+/* Wrong OTP Animation */
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+
+card.classList.add("shake");
+error.style.display="block";
+
+{% endif %}
+{% endwith %}
+
+</script>
 
 {% endblock %}

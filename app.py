@@ -13,6 +13,10 @@ from werkzeug.security import check_password_hash
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
+
+
+   
+        
 import joblib
 import csv
 import os
@@ -27,33 +31,40 @@ app.secret_key="secretkey"
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 
-
-
-db = mysql.connector.connect(
-    host=os.getenv("DB_HOST", "localhost"),
-    user=os.getenv("DB_USER", "root"),
-    password=os.getenv("DB_PASS", "root1234"),
-    database=os.getenv("DB_NAME", "student_ai")
-)
+# db=mysql.connector.connect(
+# host="localhost",
+# user="root",
+# password="root1234",
+# database="student_ai"
+# )
 
 # cursor=db.cursor()
 
-cursor = db.cursor(dictionary=True)
+# cursor = db.cursor(dictionary=True)
+def get_db():
+    db = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root1234",
+        database="student_ai"
+    )
+    return db, db.cursor(dictionary=True)
 
  
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = "iamranjeet2572@gmail.com"
-app.config['MAIL_PASSWORD'] = "ujkwztiyaejcoxbh"
+app.config['MAIL_USERNAME'] = "apex.instituteiit@gmail.com"
+app.config['MAIL_PASSWORD'] = "ouinxhmcjgmwtpfu"
 
 mail = Mail(app)
 
 
 
-
 @app.route('/')
 def home():
+
+    db, cursor = get_db()
 
     cursor.execute("SELECT COUNT(*) AS total FROM students")
     total_students = cursor.fetchone()['total']
@@ -64,6 +75,9 @@ def home():
     cursor.execute("SELECT MIN(rank_no) AS top_rank FROM marks WHERE rank_no > 0")
     top_rank = cursor.fetchone()['top_rank'] or 0
 
+    cursor.close()
+    db.close()
+
     return render_template(
         "index.html",
         total_students=total_students,
@@ -73,18 +87,21 @@ def home():
     
     
     
-    
 # _______________________________________________
                     #dashboard
 # _______________________________________________
 @app.route('/dashboard')
 def dashboard():
 
+    db, cursor = get_db()
+
     cursor.execute("SELECT * FROM marks ORDER BY total DESC")
+    data = cursor.fetchall()
 
-    data=cursor.fetchall()
+    cursor.close()
+    db.close()
 
-    return render_template("dashboard.html",data=data)
+    return render_template("dashboard.html", data=data)
 
 #__________________end dashboard_____________________ 
 
@@ -101,20 +118,25 @@ def login():
 
     if request.method=="POST":
 
-        sid=request.form['student_id']
-        password=request.form['password']
+        sid = request.form['student_id']
+        password = request.form['password']
+
+        db, cursor = get_db()
 
         cursor.execute(
         "SELECT * FROM students WHERE student_id=%s",
         (sid,)
         )
 
-        user=cursor.fetchone()
+        user = cursor.fetchone()
 
-        if user and check_password_hash(user['password'],password):
+        cursor.close()
+        db.close()
 
-            session.permanent=True
-            session['student_id']=sid
+        if user and check_password_hash(user['password'], password):
+
+            session.permanent = True
+            session['student_id'] = sid
 
             return redirect('/student_dashboard')
 
@@ -135,7 +157,6 @@ def login():
 # _______________________________________________
         # Student Dashboard Backend
 # _______________________________________________
-
 @app.route('/student_dashboard')
 def student_dashboard():
 
@@ -143,6 +164,8 @@ def student_dashboard():
         return redirect('/login')
 
     sid = session['student_id']
+
+    db, cursor = get_db()
 
     # student details
     cursor.execute(
@@ -158,7 +181,6 @@ def student_dashboard():
     )
     marks = cursor.fetchone()
 
-    # agar marks nahi hai
     if not marks:
         marks = {
             "maths": 0,
@@ -169,7 +191,7 @@ def student_dashboard():
             "rank_no": "-"
         }
 
-    # leaderboard (Top 5 students)
+    # leaderboard top 5
     cursor.execute("""
     SELECT students.name, marks.student_id, marks.total, marks.rank_no
     FROM marks
@@ -181,14 +203,15 @@ def student_dashboard():
 
     leaderboard = cursor.fetchall()
 
+    cursor.close()
+    db.close()
+
     return render_template(
         "student_dashboard.html",
         data=student,
         marks=marks,
         leaderboard=leaderboard
     )
-
-
 # _____________end Student Dashboard Backend_____________________
 
 
@@ -221,6 +244,8 @@ def profile():
         return redirect('/login')
 
     sid = session['student_id']
+
+    db, cursor = get_db()
 
     if request.method == "POST":
 
@@ -278,7 +303,10 @@ def profile():
 
     data = cursor.fetchone()
 
-    return render_template("student_profile.html",data=data)
+    cursor.close()
+    db.close()
+
+    return render_template("student_profile.html", data=data)
 # _______________end student profile_______________
 
 
@@ -287,7 +315,7 @@ def profile():
 
 
 # _______________________________________________
-            # user Password change 
+            # user change Password
 # _______________________________________________
 
 
@@ -297,12 +325,16 @@ def change_password():
     if 'student_id' not in session:
         return {"message":"Login required"}
 
+    db, cursor = get_db()
+
     current = request.form.get('current_password')
     new = request.form.get('new_password')
     confirm = request.form.get('confirm_password')
 
     # password match check
     if new != confirm:
+        cursor.close()
+        db.close()
         return {"message":"New password and confirm password do not match"}
 
     # get current password from database
@@ -314,10 +346,14 @@ def change_password():
     user = cursor.fetchone()
 
     if not user:
+        cursor.close()
+        db.close()
         return {"message":"User not found"}
 
     # check old password
     if not check_password_hash(user['password'], current):
+        cursor.close()
+        db.close()
         return {"message":"Current password incorrect"}
 
     # hash new password
@@ -330,6 +366,9 @@ def change_password():
     )
 
     db.commit()
+
+    cursor.close()
+    db.close()
 
     return {"message":"Password updated successfully"}
             
@@ -345,31 +384,31 @@ def signup():
 
     if request.method == "POST":
 
-        name=request.form['name']
-        mobile=request.form['mobile']
-        email=request.form['email']
-        password=request.form['password']
+        name = request.form['name']
+        mobile = request.form['mobile']
+        email = request.form['email']
+        password = request.form['password']
 
         # generate OTP
-        otp=random.randint(100000,999999)
+        otp = random.randint(100000,999999)
 
-        session['otp']=otp
-        session['otp_time']=time.time()
+        session['otp'] = otp
+        session['otp_time'] = time.time()
 
-        session['signup_data']={
-            "name":name,
-            "mobile":mobile,
-            "email":email,
-            "password":generate_password_hash(password)
+        session['signup_data'] = {
+            "name": name,
+            "mobile": mobile,
+            "email": email,
+            "password": generate_password_hash(password)
         }
 
-        msg=Message(
-        "OTP Verification - AI Student System",
-        sender=app.config['MAIL_USERNAME'],
-        recipients=[email]
+        msg = Message(
+            "OTP Verification - Apex Institute",
+            sender = app.config['MAIL_USERNAME'],
+            recipients = [email]
         )
 
-        msg.body=f"""
+        msg.body = f"""
 Your OTP Verification Code
 
 OTP : {otp}
@@ -384,7 +423,7 @@ This OTP will expire in 5 minutes.
         return redirect('/verify_otp')
 
     return render_template("signup.html")
-# ____________end_____________________________
+# ____________end signup_____________________________
 
 
 
@@ -394,32 +433,58 @@ This OTP will expire in 5 minutes.
 # _______________________________________________
             #OTP Verification Route
 # _______________________________________________
-@app.route('/verify_otp',methods=['GET','POST'])
+@app.route('/verify_otp', methods=['GET','POST'])
 def verify_otp():
 
-    if request.method=="POST":
+    db, cursor = get_db()
 
-        user_otp=request.form['otp']
+    # initialize attempt tracking
+    if 'otp_attempts' not in session:
+        session['otp_attempts'] = 0
+        session['otp_first_try_time'] = time.time()
+
+    # block if 3 attempts within 1 hour
+    if session['otp_attempts'] >= 3:
+
+        if time.time() - session['otp_first_try_time'] < 3600:
+            flash("Too many wrong OTP attempts. Try again after 1 hour.","danger")
+            cursor.close()
+            db.close()
+            return render_template("verify_otp.html")
+
+        else:
+            session['otp_attempts'] = 0
+            session['otp_first_try_time'] = time.time()
+
+
+    if request.method == "POST":
+
+        user_otp = request.form['otp']
 
         if 'otp' not in session:
             flash("Session expired. Signup again.","danger")
+            cursor.close()
+            db.close()
             return redirect('/signup')
 
-        if time.time()-session['otp_time']>300:
+        if time.time() - session['otp_time'] > 300:
             flash("OTP expired. Try again.","danger")
+            cursor.close()
+            db.close()
             return redirect('/signup')
 
-        if int(user_otp)==session['otp']:
+        if int(user_otp) == session['otp']:
 
-            data=session['signup_data']
+            # reset attempts
+            session.pop('otp_attempts', None)
+            session.pop('otp_first_try_time', None)
 
-            # current year
+            data = session['signup_data']
             year = datetime.now().year
 
-            # find last student of this year
             cursor.execute(
-            "SELECT student_id FROM students WHERE student_id LIKE %s ORDER BY student_id DESC LIMIT 1",
-            ("STU"+str(year)+"%",)
+                "SELECT student_id FROM students WHERE student_id LIKE %s ORDER BY student_id DESC LIMIT 1",
+                ("STU"+str(year)+"%",)
             )
 
             last = cursor.fetchone()
@@ -432,25 +497,31 @@ def verify_otp():
 
             student_id = "STU" + str(year) + f"{new_num:03d}"
 
-            sql="""
+            sql = """
             INSERT INTO students
             (student_id,name,mobile,email,password)
             VALUES(%s,%s,%s,%s,%s)
             """
 
-            val=(student_id,data['name'],data['mobile'],data['email'],data['password'])
-
-            cursor.execute(sql,val)
-            db.commit()
-            # send welcome email
-            msg = Message(
-            "Welcome to AI Student Performance System",
-            sender=app.config['MAIL_USERNAME'],
-            recipients=[data['email']]
+            val = (
+                student_id,
+                data['name'],
+                data['mobile'],
+                data['email'],
+                data['password']
             )
-            msg.html = f"""
-            <h2>Welcome to AI Student Performance System 🎓</h2>
 
+            cursor.execute(sql, val)
+            db.commit()
+
+            msg = Message(
+                "Welcome to Apex Institute",
+                sender=app.config['MAIL_USERNAME'],
+                recipients=[data['email']]
+            )
+
+            msg.html = f"""
+            <h2>Welcome to Apex Institute 🎓</h2>
             <p>Hello <b>{data['name']}</b>,</p>
 
             <p>Your account has been successfully created.</p>
@@ -463,34 +534,40 @@ def verify_otp():
             style="background:#26a69a;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">
             Login Now
             </a>
-
-            <hr>
-
-            <p>AI Education System</p>
             """
 
             mail.send(msg)
 
-            # popup ke liye student id store
             flash({
-            "name": data['name'],
-            "email": data['email'],
-            "id": student_id
-            },"student_data")
-            
-            session.pop('otp',None)
-            session.pop('signup_data',None)
-            session.pop('otp_time',None)
-            
+                "name": data['name'],
+                "email": data['email'],
+                "id": student_id
+            }, "student_data")
+
+            session.pop('otp', None)
+            session.pop('signup_data', None)
+            session.pop('otp_time', None)
+
+            cursor.close()
+            db.close()
+
             return redirect('/login')
-                
 
         else:
 
-            flash("Invalid OTP","danger")
+            session['otp_attempts'] += 1
+            remaining = 3 - session['otp_attempts']
+
+            if remaining > 0:
+                flash(f"Invalid OTP. {remaining} attempt(s) left.","danger")
+            else:
+                flash("Too many wrong OTP attempts. Try again after 1 hour.","danger")
+
+    cursor.close()
+    db.close()
 
     return render_template("verify_otp.html")
-# __________end_________________
+# __________end_ verify_otp________________
 
 
 
@@ -507,9 +584,10 @@ def resend_otp():
 
     # session check
     if 'signup_data' not in session:
+        flash("Session expired. Signup again.","danger")
         return redirect('/signup')
 
-    # 1 minute resend limit
+    # resend limit (1 minute)
     if 'otp_time' in session:
         if time.time() - session['otp_time'] < 60:
             flash("Wait 1 minute before requesting new OTP","warning")
@@ -524,7 +602,7 @@ def resend_otp():
     session['otp_time'] = time.time()
 
     msg = Message(
-        "Resend OTP - AI Student System",
+        "Resend OTP - Apex Institute",
         sender = app.config['MAIL_USERNAME'],
         recipients = [email]
     )
@@ -534,7 +612,7 @@ Your New OTP Code
 
 OTP : {otp}
 
-Valid for 1 minute.
+This OTP will expire in 5 minutes.
 """
 
     mail.send(msg)
@@ -550,34 +628,44 @@ Valid for 1 minute.
 
 
 # _______________________________________________
-              #Send Reset OTP
+              #forgot_password
 # _______________________________________________
-@app.route('/forgot_password',methods=['GET','POST'])
+@app.route('/forgot_password', methods=['GET','POST'])
 def forgot_password():
 
-    if request.method=="POST":
+    if request.method == "POST":
 
-        email=request.form['email']
+        email = request.form['email']
 
-        otp=random.randint(100000,999999)
+        # generate OTP
+        otp = random.randint(100000,999999)
 
-        session['reset_otp']=otp
-        session['reset_email']=email
+        session['reset_otp'] = otp
+        session['reset_email'] = email
+        session['reset_time'] = time.time()
 
-        msg=Message(
-        "Password Reset OTP",
-        sender=app.config['MAIL_USERNAME'],
-        recipients=[email]
+        msg = Message(
+            "Password Reset OTP",
+            sender = app.config['MAIL_USERNAME'],
+            recipients = [email]
         )
 
-        msg.body=f"Your reset OTP is {otp}"
+        msg.body = f"""
+Your Password Reset OTP
+
+OTP : {otp}
+
+This OTP will expire in 5 minutes.
+"""
 
         mail.send(msg)
+
+        flash("OTP sent to your email","success")
 
         return redirect('/reset_password')
 
     return render_template("forgot_password.html")
-# ______________end Send Reset OTP_____________
+# ______________end forgot_password_____________
 
 
 
@@ -590,26 +678,42 @@ def forgot_password():
 @app.route('/reset_password',methods=['GET','POST'])
 def reset_password():
 
-    if request.method=="POST":
+    if request.method == "POST":
 
-        otp=request.form['otp']
-        password=request.form['password']
+        otp = request.form['otp']
+        password = request.form['password']
 
-        if int(otp)==session['reset_otp']:
+        # session check
+        if 'reset_otp' not in session or 'reset_email' not in session:
+            flash("Session expired. Try again.","danger")
+            return redirect('/forgot_password')
 
-            email=session['reset_email']
+        if int(otp) == session['reset_otp']:
+
+            db, cursor = get_db()
+
+            email = session['reset_email']
             hashed = generate_password_hash(password)
 
-            sql="UPDATE students SET password=%s WHERE email=%s"
+            sql = "UPDATE students SET password=%s WHERE email=%s"
             cursor.execute(sql,(hashed,email))
 
             db.commit()
+
+            cursor.close()
+            db.close()
+
+            # clear session
+            session.pop('reset_otp',None)
+            session.pop('reset_email',None)
+
+            flash("Password reset successfully","success")
 
             return redirect('/login')
 
         else:
 
-            return "Invalid OTP"
+            flash("Invalid OTP","danger")
 
     return render_template("reset_password.html")
 #_____________end Reset Password Backend__________ 
@@ -623,7 +727,6 @@ def reset_password():
 # _______________________________________________   
                 # admin login   
 # _______________________________________________
-
 @app.route('/admin_login', methods=['GET','POST'])
 def admin_login():
 
@@ -632,11 +735,15 @@ def admin_login():
         username = request.form['username']
         password = request.form['password']
 
-        sql = "SELECT * FROM admin WHERE username=%s AND password=%s"
+        db, cursor = get_db()
 
+        sql = "SELECT * FROM admin WHERE username=%s AND password=%s"
         cursor.execute(sql,(username,password))
 
         admin = cursor.fetchone()
+
+        cursor.close()
+        db.close()
 
         if admin:
 
@@ -673,6 +780,8 @@ def admin_panel():
 
     update_rank()
 
+    db, cursor = get_db()
+
     # total students
     cursor.execute("SELECT COUNT(*) AS total_students FROM students")
     total_students = cursor.fetchone()['total_students']
@@ -702,6 +811,9 @@ def admin_panel():
     """)
     chart = cursor.fetchone()
 
+    cursor.close()
+    db.close()
+
     return render_template(
         "admin_panel.html",
         total_students=total_students,
@@ -722,6 +834,8 @@ def admin_panel():
 @app.route('/admin_logout')
 def admin_logout():
 
+
+     # remove admin session
     session.pop('admin', None)
 
     return redirect('/admin_login')
@@ -744,6 +858,8 @@ def admin_settings():
     if 'admin' not in session:
         return redirect('/admin_login')
 
+    db, cursor = get_db()
+
     search = request.args.get('search','')
     batch = request.args.get('batch','')
     gender = request.args.get('gender','')
@@ -754,7 +870,7 @@ def admin_settings():
     # SEARCH FILTER
     if search:
         sql += " AND (name LIKE %s OR student_id LIKE %s OR email LIKE %s)"
-        params += [f"%{search}%",f"%{search}%",f"%{search}%"]
+        params += [f"%{search}%", f"%{search}%", f"%{search}%"]
 
     # BATCH FILTER
     if batch:
@@ -766,18 +882,19 @@ def admin_settings():
         sql += " AND gender=%s"
         params.append(gender)
 
-    cursor.execute(sql,params)
+    cursor.execute(sql, params)
 
     students = cursor.fetchall()
+
+    cursor.close()
+    db.close()
 
     return render_template(
         "admin_settings.html",
         students=students
-    )
+    ) 
     
-    
-    
-# _____________admin student detail____________
+# _____________end admin student detail____________
 
 
 
@@ -792,6 +909,8 @@ def edit_student(student_id):
 
     if 'admin' not in session:
         return redirect('/admin_login')
+
+    db, cursor = get_db()
 
     if request.method == "POST":
 
@@ -826,6 +945,9 @@ def edit_student(student_id):
 
         flash("Student details updated successfully","success")
 
+        cursor.close()
+        db.close()
+
         return redirect('/admin_settings')
 
     cursor.execute(
@@ -834,6 +956,9 @@ def edit_student(student_id):
     )
 
     student = cursor.fetchone()
+
+    cursor.close()
+    db.close()
 
     return render_template(
         "admin_edit_student.html",
@@ -853,6 +978,8 @@ def add_student_admin():
 
     if 'admin' not in session:
         return redirect('/admin_login')
+
+    db, cursor = get_db()
 
     if request.method == "POST":
 
@@ -926,24 +1053,28 @@ def add_student_admin():
 
         mail.send(msg)
 
+        cursor.close()
+        db.close()
+
         # AJAX response
         return {"status":"success"}
 
+    cursor.close()
+    db.close()
+
     return render_template("add_student_admin.html")
-# _________________________________________________
+# ________________end __add_student_admin_______________________________
 
 
 
 
 
 # _______________________________________________
-            # 
+            # generate_password
 # _______________________________________________
 
 
-def generate_password():
-
-    length = 10
+def generate_password(length=10):
 
     lower = string.ascii_lowercase
     upper = string.ascii_uppercase
@@ -964,8 +1095,13 @@ def generate_password():
     random.shuffle(password)
 
     return "".join(password)
+# _____________end generate_password__________________________________
 
-# _______________________________________________
+
+
+
+
+
 
 
 # _______________________________________________
@@ -976,6 +1112,8 @@ def delete_student(student_id):
 
     if 'admin' not in session:
         return redirect('/admin_login')
+
+    db, cursor = get_db()
 
     cursor.execute(
         "SELECT * FROM students WHERE student_id=%s",
@@ -999,18 +1137,42 @@ def delete_student(student_id):
 
         flash("Student not found","danger")
 
+    cursor.close()
+    db.close()
+
     return redirect('/admin_settings')
 # __________end Delete Student Route________
 
     
     
+    
+    
+    
+# _______________________________________________
+                # upload_marks_page
+# _______________________________________________ 
+
 @app.route('/upload_marks_page')
 def upload_marks_page():
 
     if 'admin' not in session:
+        flash("Admin login required","danger")
         return redirect('/admin_login')
 
     return render_template("admin_upload_marks.html")
+    
+# @app.route('/upload_marks_page')
+# def upload_marks_page():
+
+#     if 'admin' not in session:
+#         return redirect('/admin_login')
+
+#     return render_template("admin_upload_marks.html")
+# ________________upload_marks_page _________________
+                
+    
+    
+    
     
     
 # _______________________________________________
@@ -1019,17 +1181,24 @@ def upload_marks_page():
 @app.route('/add_marks', methods=['POST'])
 def add_marks():
 
+    if 'admin' not in session:
+        return redirect('/admin_login')
+
+    db, cursor = get_db()
+
     sid = request.form.get('student_id')
 
     # ✔ Check student exist
     cursor.execute(
-    "SELECT * FROM students WHERE student_id=%s",
-    (sid,)
+        "SELECT * FROM students WHERE student_id=%s",
+        (sid,)
     )
 
     student = cursor.fetchone()
 
     if not student:
+        cursor.close()
+        db.close()
         flash("Student ID not found","danger")
         return redirect('/admin_panel')
 
@@ -1037,10 +1206,8 @@ def add_marks():
     p = int(request.form.get('physics'))
     c = int(request.form.get('chemistry'))
     b = int(request.form.get('biology'))
-   
-    
 
-    total = m+p+c+b
+    total = m + p + c + b
 
     sql = """
     INSERT INTO marks
@@ -1052,10 +1219,16 @@ def add_marks():
 
     db.commit()
 
+    cursor.close()
+    db.close()
+
     update_rank()
 
     return redirect('/admin_panel')
 # ___________end add_marks______________
+    
+    
+    
     
 
 
@@ -1069,6 +1242,8 @@ def upload_marks():
     if 'admin' not in session:
         return redirect('/admin_login')
 
+    db, cursor = get_db()
+
     file = request.files['file']
 
     if file.filename.endswith('.csv'):
@@ -1076,14 +1251,14 @@ def upload_marks():
     else:
         df = pd.read_excel(file)
 
-    for index,row in df.iterrows():
+    for index, row in df.iterrows():
 
         sid = row['student_id']
 
         # student exist check
         cursor.execute(
-        "SELECT * FROM students WHERE student_id=%s",
-        (sid,)
+            "SELECT * FROM students WHERE student_id=%s",
+            (sid,)
         )
 
         student = cursor.fetchone()
@@ -1099,8 +1274,8 @@ def upload_marks():
 
             # check marks already exist
             cursor.execute(
-            "SELECT * FROM marks WHERE student_id=%s",
-            (sid,)
+                "SELECT * FROM marks WHERE student_id=%s",
+                (sid,)
             )
 
             existing = cursor.fetchone()
@@ -1129,6 +1304,9 @@ def upload_marks():
 
     db.commit()
 
+    cursor.close()
+    db.close()
+
     update_rank()
 
     flash("Marks uploaded successfully","success")
@@ -1150,6 +1328,8 @@ def upload_marks():
 @app.route('/get_student_name', methods=['POST'])
 def get_student_name():
 
+    db, cursor = get_db()
+
     student_id = request.form['student_id']
 
     cursor.execute(
@@ -1159,6 +1339,9 @@ def get_student_name():
 
     student = cursor.fetchone()
 
+    cursor.close()
+    db.close()
+
     if student:
         return {"name": student['name']}
     else:
@@ -1167,13 +1350,21 @@ def get_student_name():
 # __________end add marks get_student_name____________
     
     
+    
+    
+    
+    
+    
+    
 # _______________________________________________
             # Rank Auto Update
 # _______________________________________________
 def update_rank():
 
+    db, cursor = get_db()
+
     cursor.execute(
-    "SELECT student_id,total FROM marks ORDER BY total DESC"
+        "SELECT student_id,total FROM marks ORDER BY total DESC"
     )
 
     data = cursor.fetchall()
@@ -1183,15 +1374,22 @@ def update_rank():
     for row in data:
 
         cursor.execute(
-        "UPDATE marks SET rank_no=%s WHERE student_id=%s",
-        (rank,row['student_id'])
+            "UPDATE marks SET rank_no=%s WHERE student_id=%s",
+            (rank, row['student_id'])
         )
 
         rank += 1
 
     db.commit()
 
+    cursor.close()
+    db.close()
+
 # ________end Rank Auto Update__________
+
+
+
+
 
 
 
@@ -1205,6 +1403,8 @@ def student_records():
         return redirect('/admin_login')
 
     update_rank()   # rank refresh
+
+    db, cursor = get_db()
 
     search = request.args.get('search','')
 
@@ -1248,6 +1448,9 @@ def student_records():
 
     students = cursor.fetchall()
 
+    cursor.close()
+    db.close()
+
     return render_template(
         "student_records.html",
         students=students
@@ -1269,12 +1472,17 @@ def delete_marks(student_id):
     if 'admin' not in session:
         return redirect('/admin_login')
 
+    db, cursor = get_db()
+
     cursor.execute(
-    "DELETE FROM marks WHERE student_id=%s",
-    (student_id,)
+        "DELETE FROM marks WHERE student_id=%s",
+        (student_id,)
     )
 
     db.commit()
+
+    cursor.close()
+    db.close()
 
     update_rank()
 
@@ -1291,6 +1499,11 @@ def delete_marks(student_id):
 # _______________________________________________
 @app.route("/edit_marks/<student_id>", methods=["GET","POST"])
 def edit_marks(student_id):
+
+    if 'admin' not in session:
+        return redirect('/admin_login')
+
+    db, cursor = get_db()
 
     if request.method == "POST":
 
@@ -1313,12 +1526,22 @@ def edit_marks(student_id):
 
         db.commit()
 
+        cursor.close()
+        db.close()
+
         update_rank()
 
         return redirect("/student_records")
 
-    cursor.execute("SELECT * FROM marks WHERE student_id=%s",(student_id,))
+    cursor.execute(
+        "SELECT * FROM marks WHERE student_id=%s",
+        (student_id,)
+    )
+
     data = cursor.fetchone()
+
+    cursor.close()
+    db.close()
 
     return render_template("edit_marks.html", data=data)
 # ________________End student edit Marks Route____________________
@@ -1344,6 +1567,7 @@ def upload_dataset():
         flash("No dataset uploaded","danger")
         return redirect('/prediction_page')
 
+    # create dataset folder if not exist
     if not os.path.exists("dataset"):
         os.makedirs("dataset")
 
@@ -1352,68 +1576,79 @@ def upload_dataset():
 
     df = pd.read_csv(path)
 
+    # clean column names
     df.columns = df.columns.str.strip().str.lower()
 
-    # remove NaN values
-    df = df.fillna(0)
-    
-    
-    # detect numeric columns automatically
+    # replace blank values
+    df.replace("",0,inplace=True)
+
+    # convert numeric safely
+    for col in df.columns:
+        try:
+            df[col] = pd.to_numeric(df[col])
+        except:
+            pass
+
+    # fill missing values
+    df.fillna(0,inplace=True)
+
     numeric_cols = df.select_dtypes(include=['int64','float64']).columns
 
-    # last column target
+    if len(numeric_cols) < 2:
+        flash("Dataset must contain numeric columns","danger")
+        return redirect('/prediction_page')
+
     X = df[numeric_cols[:-1]]
     y = df[numeric_cols[-1]]
 
-    X_train,X_test,y_train,y_test = train_test_split(
-        X,y,test_size=0.2,random_state=42
-    )
+    try:
 
-    model = RandomForestRegressor()
-    model.fit(X_train,y_train)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
 
-    joblib.dump(model,"model.pkl")
+        model = RandomForestRegressor()
+        model.fit(X_train, y_train)
 
-    flash("Dataset uploaded & AI model trained","success")
+        joblib.dump(model, "model.pkl")
+
+        flash("Dataset uploaded & AI model trained","success")
+
+    except Exception as e:
+
+        flash("Dataset training failed","danger")
 
     return redirect('/prediction_page?run=1')
-    
 # ________________end upload dataset_____________
 
 
 
 
 
+
+
 # _______________________________________________
-#                     # prediction
-# # _______________________________________________
-# @app.route('/predict',methods=['POST'])
+                    # predict_dynamic
+# _______________________________________________
 
-# def predict():
-
-#     m=int(request.form['maths'])
-#     p=int(request.form['physics'])
-#     c=int(request.form['chemistry'])
-#     b=int(request.form['biology'])
-#     a=int(request.form['attendance'])
-#     pr=int(request.form['practice'])
-
-#     score,category,importance=predict_student(m,p,c,b,a,pr)
-
-#     return render_template(
-#     "prediction.html",
-#     score=score,
-#     category=category,
-#     importance=importance
-#     )
-    
-# # _____________end prediction_______________
 @app.route('/predict_dynamic', methods=['POST'])
 def predict_dynamic():
+
+    # check model file exist
+    if not os.path.exists("model.pkl"):
+        flash("AI model not trained yet","danger")
+        return redirect('/prediction_page')
 
     model = joblib.load("model.pkl")
 
     data = request.form.to_dict()
+
+    # convert numeric values
+    for key in data:
+        try:
+            data[key] = float(data[key])
+        except:
+            data[key] = 0
 
     df = pd.DataFrame([data])
 
@@ -1423,8 +1658,7 @@ def predict_dynamic():
         "prediction_result.html",
         prediction=round(prediction,2)
     )
-    
-    
+# ________________predict_dynamic____________________   
     
     
     
@@ -1444,81 +1678,58 @@ def prediction_page():
 
     if run:
 
-        path = "dataset/dataset.csv"
+        try:
 
-        # dataset exist check
-        if not os.path.exists(path):
-            flash("Dataset not found. Upload dataset first.","danger")
-            return render_template(
-                "prediction_page.html",
-                students=[],
-                columns=[]
-            )
+            df = pd.read_csv("dataset/dataset.csv")
 
-        df = pd.read_csv(path)
+            df.columns = df.columns.str.strip().str.lower()
 
-        # clean column names
-        df.columns = df.columns.str.strip().str.lower()
+            # CLEAN DATA
+            df.replace("",0,inplace=True)
+            df.fillna(0,inplace=True)
 
-        # remove unnamed columns
-        df = df.loc[:, ~df.columns.str.contains('^unnamed', case=False)]
+            numeric_cols = df.select_dtypes(include=['int64','float64']).columns
 
-        # replace blank values
-        df.replace("",0,inplace=True)
-        df.fillna(0,inplace=True)
+            ignore_cols = [
+                "id","age","attendance","study_hours","practice_hours",
+                "internal_marks","result","rank","total","total_score"
+            ]
 
-        # convert numeric columns safely
-        for col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="ignore")
+            subject_cols = [c for c in numeric_cols if c not in ignore_cols]
 
-        # detect numeric columns
-        numeric_cols = df.select_dtypes(include=['int64','float64']).columns
+            if len(subject_cols) == 0:
+                subject_cols = numeric_cols
 
-        # ignore non subject columns
-        ignore_cols = [
-            "id","age","attendance","study_hours","practice_hours",
-            "internal_marks","result","rank","total","total_score"
-        ]
+            df["Total_Score"] = df[subject_cols].sum(axis=1)
 
-        # auto detect subjects
-        subject_cols = [
-            c for c in numeric_cols
-            if c not in ignore_cols
-        ]
+            df["Rank"] = df["Total_Score"].rank(ascending=False).astype(int)
 
-        # fallback if subjects not detected
-        if len(subject_cols) == 0:
-            subject_cols = numeric_cols
+            df["Weak_Subject"] = df[subject_cols].idxmin(axis=1)
 
-        # total score
-        df["Total_Score"] = df[subject_cols].sum(axis=1)
+            target = df["Total_Score"].max()
 
-        # ranking
-        df["Rank"] = df["Total_Score"].rank(ascending=False).astype(int)
+            df["Target_Score"] = target
 
-        # weak subject detection
-        df["Weak_Subject"] = df[subject_cols].idxmin(axis=1)
+            df["Improvement_Needed"] = target - df["Total_Score"]
 
-        # target score
-        target = df["Total_Score"].max()
+            # feature importance
+            X = df[subject_cols]
+            y = df["Total_Score"]
 
-        df["Target_Score"] = target
-        df["Improvement_Needed"] = target - df["Total_Score"]
+            model = RandomForestRegressor()
+            model.fit(X,y)
 
-        # AI feature importance
-        X = df[subject_cols]
-        y = df["Total_Score"]
+            importance = model.feature_importances_
 
-        model = RandomForestRegressor()
-        model.fit(X,y)
+            chart_labels = list(subject_cols)
+            chart_values = importance.tolist()
 
-        importance = model.feature_importances_
+            students = df.to_dict(orient="records")
+            columns = list(df.columns)
 
-        chart_labels = subject_cols
-        chart_values = importance.tolist()
+        except Exception as e:
 
-        students = df.to_dict(orient="records")
-        columns = list(df.columns)
+            flash("Dataset processing error","danger")
 
     return render_template(
         "prediction_page.html",
@@ -1542,25 +1753,37 @@ def prediction_page():
 @app.route('/leaderboard')
 def leaderboard():
 
-    cursor.execute("SELECT * FROM marks ORDER BY rank_no ASC")
+    db, cursor = get_db()
 
-    data=cursor.fetchall()
+    cursor.execute("""
+        SELECT 
+        marks.student_id,
+        students.name,
+        marks.total,
+        marks.rank_no
+        FROM marks
+        JOIN students 
+        ON marks.student_id = students.student_id
+        ORDER BY marks.rank_no ASC
+    """)
 
-    return render_template("leaderboard.html",data=data)
+    data = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return render_template("leaderboard.html", data=data)
   
 # ____________________end  Leaderboard_____________________________________
 
 
 
+
+
+
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
-
-
-# if __name__ == "__main__":
-#     app.run()
-    
+    app.run(debug=True)
     
     
     
