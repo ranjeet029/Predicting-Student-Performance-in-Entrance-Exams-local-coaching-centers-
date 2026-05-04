@@ -1,105 +1,232 @@
 <style>
 
 .student-navbar{
-background:#2c3e50;
+  background:#2c3e50;
+  position:sticky;
+  top:0;
+  z-index:1000;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
 
 .student-navbar .navbar-brand{
-color:white;
-font-weight:600;
+  color:white;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+}
+
+.logo-img{
+  height:40px;
+  margin-right:10px;
+  transition:0.3s;
+}
+
+.navbar-brand:hover .logo-img{
+  transform:scale(1.05);
+}
+
+/* DARK MODE */
+.dark-mode{
+  background:#121212 !important;
+  color:white !important;
+}
+
+/* PROFILE */
+.profile-wrapper{
+  position:relative;
 }
 
 .profile-img{
-width:35px;
-height:35px;
-border-radius:50%;
-object-fit:cover;
-margin-left:15px;
-border:2px solid white;
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid white;
+  cursor:pointer;
 }
 
-.navbar-toggler{
-border:none;
+/* STATUS */
+.status-dot{
+  position:absolute;
+  bottom:0;
+  right:0;
+  width:10px;
+  height:10px;
+  background:limegreen;
+  border-radius:50%;
+  border:2px solid white;
 }
 
-.navbar-toggler-icon{
-filter:invert(1);
+/* NOTIFICATION */
+.bell{
+  font-size:18px;
+  color:white;
+  margin-right:15px;
+  cursor:pointer;
+  position:relative;
+}
+
+.bell-badge{
+  position:absolute;
+  top:-5px;
+  right:-8px;
+  background:red;
+  color:white;
+  font-size:10px;
+  padding:2px 5px;
+  border-radius:50%;
+}
+
+/* DROPDOWN */
+.profile-dropdown{
+  position:absolute;
+  right:10px;
+  top:60px;
+  background:white;
+  border-radius:10px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.2);
+  display:none;
+  min-width:150px;
+  overflow:hidden;
+  z-index:2000;
+}
+
+.profile-dropdown a{
+  display:block;
+  padding:10px;
+  text-decoration:none;
+  color:#333;
+}
+
+.profile-dropdown a:hover{
+  background:#f1f1f1;
 }
 
 </style>
 
 
-<nav class="navbar navbar-expand-lg student-navbar">
+<nav class="navbar student-navbar">
 
-<div class="container">
+<div class="container position-relative">
 
-<!-- MOBILE TOGGLER (Left side) -->
-<button class="navbar-toggler me-2"
-type="button"
-data-bs-toggle="collapse"
-data-bs-target="#studentMenu">
-
-<span class="navbar-toggler-icon"></span>
-
-</button>
-
-<!-- DASHBOARD TITLE -->
+<!-- LOGO -->
 <a class="navbar-brand" href="/student_dashboard">
-Student Dashboard
+<img src="{{ url_for('static', filename='logo.png') }}" class="logo-img">
+Apex Institute
 </a>
 
-<!-- RIGHT SIDE PROFILE IMAGE -->
-<div class="ms-auto d-lg-none">
-<img src="{{ url_for('static', filename='profile/' + data.photo) if data.photo else url_for('static', filename='default_user.png') }}"
-class="profile-img">
+<!-- RIGHT SIDE -->
+<div class="ms-auto d-flex align-items-center">
+
+<!-- 🌙 DARK MODE -->
+<button onclick="toggleDark()" class="btn btn-sm btn-light me-3">🌙</button>
+
+<!-- 🔔 NOTIFICATION -->
+<div class="bell">
+🔔
+<span class="bell-badge">0</span>
 </div>
 
-<!-- MENU -->
-<div class="collapse navbar-collapse" id="studentMenu">
-
-<ul class="navbar-nav ms-auto align-items-lg-center">
-
-<li class="nav-item mb-2 mb-lg-0">
-<a href="/student_dashboard"
-class="btn btn-warning btn-sm me-lg-2">
-Home
-</a>
-</li>
-
-
-<li class="nav-item mb-2 mb-lg-0">
-<a href="/leaderboard"
-class="btn btn-warning btn-sm me-lg-2">
-Leaderboard
-</a>
-</li>
-
-
-
-<li class="nav-item mb-2 mb-lg-0">
-<a href="/profile"
-class="btn btn-warning btn-sm me-lg-2">
-Profile
-</a>
-</li>
-
-<li class="nav-item mb-2 mb-lg-0">
-<a href="/logout"
-class="btn btn-danger btn-sm me-lg-3">
-Logout
-</a>
-</li>
-
-<!-- DESKTOP PROFILE IMAGE -->
-<li class="nav-item d-none d-lg-block">
-<img src="{{ url_for('static', filename='profile/' + data.photo) if data.photo else url_for('static', filename='default_user.png') }}"
+<!-- 👤 PROFILE -->
+<div class="profile-wrapper">
+<img id="profileBtn"
+src="{{ url_for('static', filename='profile/' + data.photo) if data.photo else url_for('static', filename='default_user.png') }}"
 class="profile-img">
-</li>
+<span class="status-dot"></span>
+</div>
 
-</ul>
+</div>
 
+<!-- DROPDOWN -->
+<div id="profileMenu" class="profile-dropdown">
+<a href="/profile">👤 My Profile</a>
+<a href="/logout">🚪 Logout</a>
 </div>
 
 </div>
 
 </nav>
+
+
+<!-- JS -->
+
+<script>
+/* PROFILE DROPDOWN */
+(function(){
+  const menu = document.getElementById("profileMenu");
+  const btn = document.getElementById("profileBtn");
+
+  if(btn && menu){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      menu.style.display = (menu.style.display === "block") ? "none" : "block";
+    });
+
+    document.addEventListener("click", function(e){
+      if(!menu.contains(e.target)){
+        menu.style.display = "none";
+      }
+    });
+
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape"){
+        menu.style.display = "none";
+      }
+    });
+  }
+})();
+</script>
+
+
+<script>
+/* 🔔 NOTIFICATION */
+function loadNotifications(){
+    fetch('/get_notifications')
+    .then(res => res.json())
+    .then(data => {
+        const badge = document.querySelector('.bell-badge');
+        if(badge){
+          badge.innerText = data.count || 0;
+        }
+    })
+    .catch(()=>{});
+}
+setInterval(loadNotifications,5000);
+loadNotifications();
+</script>
+
+
+<script>
+/* 🟢 ONLINE STATUS */
+function updateStatus(){
+    const dot = document.querySelector('.status-dot');
+    if(dot){
+      dot.style.background = navigator.onLine ? "limegreen" : "gray";
+    }
+}
+window.addEventListener("online", updateStatus);
+window.addEventListener("offline", updateStatus);
+updateStatus();
+</script>
+
+
+<script>
+/* 📊 ACTIVITY TRACK */
+setInterval(()=>{
+    fetch('/track_activity',{method:'POST'}).catch(()=>{});
+},60000);
+</script>
+
+
+<script>
+/* 🌙 DARK MODE */
+function toggleDark(){
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+}
+
+// LOAD SAVED MODE
+if(localStorage.getItem("darkMode")==="true"){
+    document.body.classList.add("dark-mode");
+}
+</script>

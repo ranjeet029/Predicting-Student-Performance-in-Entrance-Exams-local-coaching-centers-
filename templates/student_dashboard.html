@@ -306,4 +306,33 @@ max:100
 
 </script>
 
+<script>
+
+let warningTimer;
+let logoutTimer;
+
+function resetTimer(){
+
+    clearTimeout(warningTimer);
+    clearTimeout(logoutTimer);
+
+    // 19 min warning
+    warningTimer = setTimeout(() => {
+        alert("You will be logged out in 1 minute!");
+    }, 19 * 60 * 1000);
+
+    // 20 min logout
+    logoutTimer = setTimeout(() => {
+        window.location.href = "/logout";
+    }, 20 * 60 * 1000);
+}
+
+/* TRACK ACTIVITY */
+document.onload = resetTimer;
+document.onmousemove = resetTimer;
+document.onkeypress = resetTimer;
+document.onclick = resetTimer;
+
+</script>
+
 {% endblock %}

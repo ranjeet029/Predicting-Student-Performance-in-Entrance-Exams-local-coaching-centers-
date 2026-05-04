@@ -1,0 +1,288 @@
+{% extends "admin_base.html" %}
+{% block content %}
+
+<style>
+.dashboard-box{
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 6px 18px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
+
+.slider-card, .course-card, .category-card{
+background:#f4f6f9;
+padding:15px;
+border-radius:10px;
+text-align:center;
+cursor:grab;
+}
+
+.category-card:active{
+cursor:grabbing;
+}
+
+.slider-img, .course-img, .category-img{
+width:100%;
+height:150px;
+object-fit:cover;
+border-radius:8px;
+margin-bottom:10px;
+}
+
+.top-bar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+</style>
+
+<div class="container-fluid">
+
+<div class="top-bar">
+<h2>⚙️ Management Dashboard</h2>
+<a href="/management_logout" class="btn btn-danger">Logout</a>
+</div>
+
+<!-- ================= STUDENT ================= -->
+{% if request.args.get('tab') == 'student' %}
+
+<div class="dashboard-box">
+<h4>All Students</h4>
+
+<table class="table table-bordered">
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Action</th>
+</tr>
+
+{% for s in students %}
+<tr>
+<td>{{ s.id }}</td>
+<td>{{ s.name }}</td>
+<td>{{ s.email }}</td>
+<td>
+<form action="/delete_student/{{ s.id }}" method="POST">
+<button class="btn btn-danger btn-sm">Delete</button>
+</form>
+</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endif %}
+
+<!-- ================= SLIDER ================= -->
+{% if request.args.get('tab','slider') == 'slider' %}
+
+<div class="dashboard-box">
+<h4>Upload Slider</h4>
+
+<form action="/upload_slider" method="POST" enctype="multipart/form-data">
+<input type="file" name="image" class="form-control mb-3" required>
+<button class="btn btn-success w-100">Upload</button>
+</form>
+</div>
+
+<div class="dashboard-box">
+<h4>All Sliders</h4>
+
+<div class="row">
+{% for s in sliders %}
+<div class="col-md-3 mb-3">
+<div class="slider-card">
+
+<img src="{{ url_for('static', filename='slider/' + s.image) }}" class="slider-img">
+
+<form action="/delete_slider/{{ s.id }}" method="POST">
+<button class="btn btn-danger btn-sm w-100">Delete</button>
+</form>
+
+</div>
+</div>
+{% endfor %}
+</div>
+
+</div>
+
+{% endif %}
+
+<!-- ================= COURSE ================= -->
+{% if request.args.get('tab') == 'course' %}
+
+<div class="dashboard-box">
+<h4>Add Course</h4>
+
+<form action="/add_course" method="POST" enctype="multipart/form-data">
+<input type="text" name="title" class="form-control mb-2" placeholder="Course Name" required>
+
+<!-- 🔥 CATEGORY SELECT (YAHI ADD KIYA HAI) -->
+<select name="category_id" class="form-control mb-2" required>
+<option value="">Select Category</option>
+{% for cat in categories %}
+<option value="{{ cat.id }}">{{ cat.title }}</option>
+{% endfor %}
+</select>
+
+<input type="text" name="description" class="form-control mb-2" placeholder="Description" required>
+<input type="text" name="faculty" class="form-control mb-2" placeholder="Faculty" required>
+<input type="text" name="duration" class="form-control mb-2" placeholder="Duration" required>
+<input type="file" name="image" class="form-control mb-3" required>
+<button class="btn btn-primary w-100">Add Course</button>
+</form>
+</div>
+
+<div class="dashboard-box">
+<h4>All Courses</h4>
+
+<div class="row">
+{% for c in courses %}
+<div class="col-md-3 mb-3">
+<div class="course-card">
+
+<img src="{{ url_for('static', filename='courses/' + c.image) }}" class="course-img">
+
+<h6>{{ c.title }}</h6>
+<p>{{ c.duration }}</p>
+
+<form action="/delete_course/{{ c.id }}" method="POST">
+<button class="btn btn-danger btn-sm w-100">Delete</button>
+</form>
+
+</div>
+</div>
+{% endfor %}
+</div>
+
+</div>
+
+{% endif %}
+
+<!-- ================= CATEGORY ================= -->
+{% if request.args.get('tab') == 'category' %}
+
+<div class="dashboard-box">
+<h4>Add Category</h4>
+
+<form action="/add_category" method="POST" enctype="multipart/form-data">
+<input type="text" name="title" class="form-control mb-2" placeholder="Category Name" required>
+<input type="text" name="tags" class="form-control mb-2" placeholder="Tags">
+<input type="file" name="image" class="form-control mb-3" required>
+<button class="btn btn-dark w-100">Add Category</button>
+</form>
+</div>
+
+<div class="dashboard-box">
+<h4>All Categories (Drag to reorder)</h4>
+
+<!-- 🔥 DRAG CONTAINER -->
+<div id="categoryList" class="row">
+
+{% for cat in categories %}
+<div class="col-md-3 mb-3 category-item" data-id="{{ cat.id }}">
+<div class="category-card">
+
+<img src="{{ url_for('static', filename='categories/' + cat.image) }}" class="category-img">
+
+<h6>{{ cat.title }}</h6>
+
+<div class="d-flex gap-2">
+
+<form action="/delete_category/{{ cat.id }}" method="POST" class="w-50">
+<button class="btn btn-danger btn-sm w-100">Delete</button>
+</form>
+
+<a href="/edit_category/{{ cat.id }}" class="btn btn-warning btn-sm w-50">
+Edit
+</a>
+
+</div>
+
+</div>
+</div>
+{% endfor %}
+
+</div>
+
+</div>
+
+{% endif %}
+
+</div>
+
+<!-- 🔥 DRAG SCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<script>
+new Sortable(document.getElementById('categoryList'), {
+    animation: 150,
+
+    onEnd: function () {
+
+        let order = [];
+
+        document.querySelectorAll('.category-item').forEach((el, index)=>{
+            order.push({
+                id: el.dataset.id,
+                position: index + 1
+            });
+        });
+
+        fetch('/update_category_order', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(order)
+        });
+    }
+});
+</script>
+
+
+
+
+<!-- 🔥 SORTABLE JS -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<script>
+const el = document.getElementById('categoryList');
+
+if(el){
+new Sortable(el, {
+    animation: 200,
+    ghostClass: "sortable-ghost",
+
+    onEnd: function () {
+
+        let order = [];
+
+        document.querySelectorAll('.category-item').forEach((el, index)=>{
+            order.push({
+                id: el.dataset.id,
+                position: index + 1
+            });
+        });
+
+        // 🔥 SAVE TO BACKEND
+        fetch('/update_category_position', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log("Order Saved:", data);
+        });
+    }
+});
+}
+</script>
+
+{% endblock %}

@@ -89,3 +89,51 @@ file_name VARCHAR(255) NOT NULL,
 
 upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+
+-- ===============================
+-- Courses TABLE
+-- ===============================
+
+CREATE TABLE courses (
+id INT AUTO_INCREMENT PRIMARY KEY,
+course_name VARCHAR(100),
+duration VARCHAR(50),
+fees DECIMAL(10,2),
+description TEXT,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ===============================
+-- management
+-- ===============================
+
+CREATE TABLE management_auth (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100),
+    password VARCHAR(255)
+);
+
+CREATE TABLE sliders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    image VARCHAR(255)
+);
+
+CREATE TABLE courses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100),
+    description TEXT,
+    faculty VARCHAR(100),
+    duration VARCHAR(50),
+    image VARCHAR(255)
+);
+
+
+CREATE TABLE exam_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100),
+    tags VARCHAR(255),
+    image VARCHAR(255)
+);

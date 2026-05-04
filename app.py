@@ -10,7 +10,8 @@ import time
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
-
+import uuid
+from flask import request, jsonify
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 
@@ -28,7 +29,7 @@ app=Flask(__name__)
 app.secret_key="secretkey"
 
 # session timeout 30 minutes
-app.permanent_session_lifetime = timedelta(minutes=30)
+app.permanent_session_lifetime = timedelta(minutes=20)
 
 
 # db=mysql.connector.connect(
@@ -66,27 +67,68 @@ def home():
 
     db, cursor = get_db()
 
-    cursor.execute("SELECT COUNT(*) AS total FROM students")
-    total_students = cursor.fetchone()['total']
+    # ✅ default values (VERY IMPORTANT)
+    total_students = 0
+    avg_score = 0
+    top_rank = 0
+    sliders = []
+    courses = []
+    categories = []   # 🔥 NEW
 
-    cursor.execute("SELECT AVG(total) AS avg_score FROM marks")
-    avg_score = cursor.fetchone()['avg_score'] or 0
+    try:
+        # 🔥 TOTAL STUDENTS
+        cursor.execute("SELECT COUNT(*) AS total FROM students")
+        result = cursor.fetchone()
+        total_students = result['total'] if result and result['total'] else 0
 
-    cursor.execute("SELECT MIN(rank_no) AS top_rank FROM marks WHERE rank_no > 0")
-    top_rank = cursor.fetchone()['top_rank'] or 0
+        # 🔥 AVG SCORE
+        cursor.execute("SELECT AVG(total) AS avg_score FROM marks")
+        result = cursor.fetchone()
+        avg_score = round(result['avg_score'], 2) if result and result['avg_score'] else 0
 
-    cursor.close()
-    db.close()
+        # 🔥 TOP RANK
+        cursor.execute("SELECT MIN(rank_no) AS top_rank FROM marks WHERE rank_no > 0")
+        result = cursor.fetchone()
+        top_rank = result['top_rank'] if result and result['top_rank'] else 0
+
+        # 🔥 SLIDERS
+        try:
+            cursor.execute("SELECT * FROM sliders ORDER BY id DESC")
+            sliders = cursor.fetchall() or []
+        except:
+            sliders = []
+
+        # 🔥 COURSES
+        try:
+            cursor.execute("SELECT * FROM courses ORDER BY id DESC")
+            courses = cursor.fetchall() or []
+        except:
+            courses = []
+
+        # 🔥 NEW: EXAM CATEGORIES
+        try:
+            cursor.execute("SELECT * FROM exam_categories ORDER BY position ASC")
+            categories = cursor.fetchall() or []
+        except:
+            categories = []
+
+    except Exception as e:
+        print("ERROR:", e)
+
+    finally:
+        cursor.close()
+        db.close()
 
     return render_template(
         "index.html",
         total_students=total_students,
-        avg_score=round(avg_score,2),
-        top_rank=top_rank
+        avg_score=avg_score,
+        top_rank=top_rank,
+        sliders=sliders,
+        courses=courses,
+        categories=categories,   # 🔥 VERY IMPORTANT
+        category_count=len(categories) 
     )
-    
-    
-    
 # _______________________________________________
                     #dashboard
 # _______________________________________________
@@ -115,6 +157,13 @@ def dashboard():
 
 @app.route('/login',methods=['GET','POST'])
 def login():
+
+    # 🔥 अगर admin login है तो उसे logout करो
+    session.pop('admin', None)
+
+    # 🔥 अगर already student login है
+    if 'student_id' in session:
+        return redirect('/student_dashboard')
 
     if request.method=="POST":
 
@@ -149,7 +198,12 @@ def login():
 # _______________end login___________________
 
 
-
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 
@@ -310,10 +364,36 @@ def profile():
 # _______________end student profile_______________
 
 
+# _______________________________________________
+            # get_notifications
+# _______________________________________________
+@app.route('/get_notifications')
+def get_notifications():
+    # example data (DB se fetch kar sakte ho)
+    return {
+        "count": 2,
+        "messages": [
+            "New marks uploaded",
+            "Profile updated"
+        ]
+    }
+# _______________end_get_notifications_______________
 
 
 
+# _______________________________________________
+            # student_track_activity
+# _______________________________________________
+@app.route('/track_activity', methods=['POST'])
+def track_activity():
+    print("User active at:", datetime.now())
+    return {"status": "ok"}
 
+# ___________end_student_track_activity___________
+
+
+
+ 
 # _______________________________________________
             # user change Password
 # _______________________________________________
@@ -729,6 +809,13 @@ def reset_password():
 # _______________________________________________
 @app.route('/admin_login', methods=['GET','POST'])
 def admin_login():
+
+    # 🔥 अगर student login है तो उसे logout करो
+    session.pop('student_id', None)
+
+    # 🔥 अगर already admin login है
+    if 'admin' in session:
+        return redirect('/admin_panel')
 
     if request.method == "POST":
 
@@ -1778,8 +1865,422 @@ def leaderboard():
 
 
 
+# ____________________________________________________________________
+                # management
+# ____________________________________________________________________
+@app.route('/admin_management', methods=['GET','POST'])
+def admin_management():
+
+    db, cursor = get_db()
+
+    # 🔐 LOGIN HANDLE
+    if request.method == "POST":
+
+        user = request.form.get('username')
+        password = request.form.get('password')
+
+        cursor.execute("SELECT * FROM management_auth LIMIT 1")
+        data = cursor.fetchone()
+
+        if data and data.get('password'):
+
+            if user == data.get('username') and check_password_hash(data.get('password'), password):
+                session['management_access'] = True
+                return redirect('/admin_management')
+            else:
+                flash("Wrong User ID or Password", "danger")
+
+        else:
+            flash("Admin not set", "danger")
+
+    # 🔒 LOGIN REQUIRED
+    if not session.get('management_access'):
+        return render_template("management_login.html")
+
+    # 🔥 FETCH DATA
+
+    # sliders
+    try:
+        cursor.execute("SELECT * FROM sliders ORDER BY id DESC")
+        sliders = cursor.fetchall()
+    except:
+        sliders = []
+
+    # courses
+    try:
+        cursor.execute("SELECT * FROM courses ORDER BY id DESC")
+        courses = cursor.fetchall()
+    except:
+        courses = []
+
+    # 🔥 categories (NEW)
+    try:
+        cursor.execute("SELECT * FROM exam_categories ORDER BY position ASC, id DESC")
+        categories = cursor.fetchall()
+    except:
+        categories = []
+
+    cursor.close()
+    db.close()
+
+    return render_template(
+        "admin_management.html",
+        sliders=sliders,
+        courses=courses,
+        categories=categories  # 🔥 IMPORTANT
+    
+    )
+    
+# _____________________________end______________________________________
+@app.route('/management_logout')
+def management_logout():
+    session.pop('management_access', None)
+    return redirect('/admin_management')
 
 
+@app.route('/upload_slider', methods=['POST'])
+def upload_slider():
+    file = request.files['image']
+
+    if file:
+        filename = file.filename
+        file.save(os.path.join('static/slider', filename))
+
+        db, cursor = get_db()
+        cursor.execute("INSERT INTO sliders (image) VALUES (%s)", (filename,))
+        db.commit()
+
+    return redirect('/admin_management')
+
+
+@app.route('/delete_slider/<int:id>', methods=['POST'])
+def delete_slider(id):
+    db, cursor = get_db()
+    cursor.execute("DELETE FROM sliders WHERE id=%s", (id,))
+    db.commit()
+
+    return redirect('/admin_management')
+
+
+
+
+
+@app.route('/add_course', methods=['POST'])
+def add_course():
+
+    title = request.form['title']
+    description = request.form['description']
+    faculty = request.form['faculty']
+    duration = request.form['duration']
+    file = request.files['image']
+
+    filename = secure_filename(file.filename)
+    file.save("static/courses/" + filename)
+
+    db, cursor = get_db()
+
+    cursor.execute("""
+        INSERT INTO courses(title, description, faculty, duration, image)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (title, description, faculty, duration, filename))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+    return redirect('/admin_management')
+
+
+@app.route('/delete_course/<int:id>', methods=['POST'])
+def delete_course(id):
+
+    db, cursor = get_db()
+
+    # image भी delete करना है (optional but best)
+    cursor.execute("SELECT image FROM courses WHERE id=%s", (id,))
+    data = cursor.fetchone()
+
+    if data:
+        try:
+            os.remove("static/courses/" + data['image'])
+        except:
+            pass
+
+    cursor.execute("DELETE FROM courses WHERE id=%s", (id,))
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return redirect('/admin_management')
+
+
+@app.route('/edit_course/<int:id>', methods=['GET','POST'])
+def edit_course(id):
+
+    db, cursor = get_db()
+
+    if request.method == "POST":
+
+        title = request.form['title']
+        description = request.form['description']
+        faculty = request.form['faculty']
+        duration = request.form['duration']
+
+        file = request.files['image']
+        filename = None
+
+        if file and file.filename != "":
+            filename = secure_filename(file.filename)
+            file.save("static/courses/" + filename)
+
+            cursor.execute("""
+                UPDATE courses
+                SET title=%s, description=%s, faculty=%s, duration=%s, image=%s
+                WHERE id=%s
+            """, (title, description, faculty, duration, filename, id))
+
+        else:
+            cursor.execute("""
+                UPDATE courses
+                SET title=%s, description=%s, faculty=%s, duration=%s
+                WHERE id=%s
+            """, (title, description, faculty, duration, id))
+
+        db.commit()
+        cursor.close()
+        db.close()
+
+        return redirect('/admin_management')
+
+    cursor.execute("SELECT * FROM courses WHERE id=%s", (id,))
+    course = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    return render_template("edit_course.html", course=course)
+
+
+
+
+
+@app.route('/add_category', methods=['POST'])
+def add_category():
+
+    if not session.get('management_access'):
+        return redirect('/admin_management')
+
+    db, cursor = get_db()
+
+    title = request.form['title']
+    tags = request.form['tags']
+    image = request.files['image']
+
+    filename = ""
+    if image and image.filename != "":
+        filename = str(uuid.uuid4()) + "_" + secure_filename(image.filename)
+        image.save("static/categories/" + filename)
+
+    # 🔥 GET LAST POSITION
+    cursor.execute("SELECT MAX(position) as max_pos FROM exam_categories")
+    last = cursor.fetchone()
+
+    # अगर table खाली है
+    next_pos = (last['max_pos'] + 1) if last['max_pos'] else 1
+
+    # 🔥 INSERT AT LAST POSITION
+    cursor.execute(
+        "INSERT INTO exam_categories (title, tags, image, position) VALUES (%s,%s,%s,%s)",
+        (title, tags, filename, next_pos)
+    )
+
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return redirect('/admin_management?tab=category')
+
+
+
+
+
+@app.route('/delete_category/<int:id>', methods=['POST'])
+def delete_category(id):
+
+    if not session.get('management_access'):
+        return redirect('/admin_management')
+
+    db, cursor = get_db()
+
+    # ✅ DELETE CATEGORY
+    cursor.execute("DELETE FROM exam_categories WHERE id=%s", (id,))
+
+    # ✅ POSITION RESET (1,2,3,4...)
+    cursor.execute("SET @rownum = 0")
+
+    cursor.execute("""
+        UPDATE exam_categories
+        SET position = (@rownum := @rownum + 1)
+        ORDER BY position ASC
+    """)
+
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return redirect('/admin_management?tab=category')
+
+
+
+
+
+
+
+#    courses pass hoga 
+@app.route('/category/<int:id>')
+def category_page(id):
+
+    db, cursor = get_db()
+
+    # 🔥 CATEGORY (same)
+    cursor.execute("SELECT * FROM exam_categories WHERE id=%s", (id,))
+    category = cursor.fetchone()
+
+    # 🔥 ALL CATEGORIES (ORDER FIX ADD KRO)
+    cursor.execute("SELECT * FROM exam_categories ORDER BY position ASC")
+    categories = cursor.fetchall()
+
+    # 🔥 COURSES
+    cursor.execute("SELECT * FROM courses ORDER BY id DESC")
+    courses = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return render_template(
+        "category.html",
+        category=category,
+        categories=categories,   # 🔥 ADD THIS
+        courses=courses
+    )
+
+
+@app.route('/edit_category/<int:id>', methods=['GET','POST'])
+def edit_category(id):
+
+    if not session.get('management_access'):
+        return redirect('/admin_management')
+
+    import os
+    from werkzeug.utils import secure_filename
+
+    db, cursor = get_db()
+
+    if request.method == "POST":
+
+        title = request.form['title']
+        tags = request.form['tags']
+        file = request.files['image']
+
+        # 🔥 NEW IMAGE UPLOAD
+        if file and file.filename != "":
+
+            # filename = secure_filename(file.filename)
+            filename = str(uuid.uuid4()) + "_" + secure_filename(file.filename)
+
+            # 🔥 OLD IMAGE DELETE
+            cursor.execute("SELECT image FROM exam_categories WHERE id=%s", (id,))
+            old = cursor.fetchone()
+
+            if old and old['image']:
+                old_path = os.path.join("static/categories/", old['image'])
+
+                if os.path.exists(old_path):
+                    try:
+                        os.remove(old_path)
+                    except:
+                        pass
+
+            # 🔥 SAVE NEW IMAGE
+            file.save(os.path.join("static/categories/", filename))
+
+            # 🔥 UPDATE WITH IMAGE
+            cursor.execute("""
+                UPDATE exam_categories
+                SET title=%s, tags=%s, image=%s
+                WHERE id=%s
+            """, (title, tags, filename, id))
+
+        else:
+            # 🔥 ONLY TEXT UPDATE
+            cursor.execute("""
+                UPDATE exam_categories
+                SET title=%s, tags=%s
+                WHERE id=%s
+            """, (title, tags, id))
+
+        db.commit()
+        cursor.close()
+        db.close()
+
+        return redirect('/admin_management?tab=category')
+
+    # 🔥 FETCH CATEGORY
+    cursor.execute("SELECT * FROM exam_categories WHERE id=%s", (id,))
+    category = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    return render_template("edit_category.html", category=category)
+
+
+
+@app.route('/update_category_order', methods=['POST'])
+def update_category_order():
+
+    data = request.get_json()
+
+    db, cursor = get_db()
+
+    for item in data:
+        cursor.execute(
+            "UPDATE exam_categories SET position=%s WHERE id=%s",
+            (item['position'], item['id'])
+        )
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+    return {"status": "success"}
+
+
+
+@app.route('/update_category_position', methods=['POST'])
+def update_category_position():
+
+    if not session.get('management_access'):
+        return jsonify({"status": "error"})
+
+    data = request.get_json()
+
+    db, cursor = get_db()
+
+    for item in data:
+        cursor.execute(
+            "UPDATE exam_categories SET position=%s WHERE id=%s",
+            (item['position'], item['id'])
+        )
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+    return jsonify({"status": "success"})
 
 
 if __name__ == "__main__":

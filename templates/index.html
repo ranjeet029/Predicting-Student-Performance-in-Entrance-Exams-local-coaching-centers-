@@ -4,88 +4,125 @@
 
 <style>
 
-.hero{
-background: linear-gradient(120deg,#1f2d3d,#3a6073);
-color:white;
-padding:120px 20px;
-text-align:center;
+/* ===== SLIDER ===== */
+#heroSlider .carousel-item{
+height:420px;
+}
+#heroSlider img{
+height:100%;
+width:100%;
+object-fit:cover;
 }
 
-.hero h1{
-font-size:48px;
+/* 🔥 SMOOTH FADE */
+.carousel-fade .carousel-item {
+opacity: 0;
+transition: opacity 1s ease-in-out;
+}
+.carousel-fade .carousel-item.active {
+opacity: 1;
+}
+
+/* ===== HERO ===== */
+.hero-section{
+background:linear-gradient(135deg,#667eea,#764ba2);
+color:white;
+padding:80px 20px;
+}
+
+.hero-title{
+font-size:40px;
+font-weight:800;
+}
+
+.hero-highlight{
+color:#ffd700;
+}
+
+.hero-section .btn{
+background:white;
+color:#333;
+border-radius:30px;
+padding:10px 30px;
 font-weight:bold;
 }
 
-.hero p{
-font-size:18px;
-margin-top:15px;
-}
-
-.btn-custom{
-padding:12px 30px;
-border-radius:30px;
-font-weight:500;
-}
-
-/* Dashboard Preview */
-
-.dashboard-preview{
-padding:70px 20px;
-background:#f4f6f9;
-}
-
-.preview-box{
-background:#fff;
-border-radius:12px;
-box-shadow:0px 6px 20px rgba(0,0,0,0.15);
-padding:25px;
-transition:0.3s;
-}
-
-.preview-box:hover{
-transform:translateY(-5px);
-}
-
-/* Features */
-
-.features{
-padding:70px 20px;
-}
-
-.feature-card{
-border:none;
-border-radius:12px;
-box-shadow:0px 4px 15px rgba(0,0,0,0.1);
-padding:25px;
-transition:0.3s;
-}
-
-.feature-card:hover{
-transform:translateY(-6px);
-}
-
-.feature-icon{
-font-size:35px;
-margin-bottom:10px;
-}
-
-/* Courses */
-.courses{
-padding:70px 20px;
+/* ===== INFO STRIP ===== */
+.info-strip{
+display:flex;
+justify-content:center;
+align-items:center;
 background:white;
+border-radius:15px;
+padding:20px;
+margin-top:-40px;
+box-shadow:0 10px 25px rgba(0,0,0,0.1);
+gap:25px;
+flex-wrap:wrap;
+}
+
+.info-item{
+width:180px;
+text-align:center;
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.info-item img{
+width:50px;
+margin-bottom:8px;
+}
+
+.info-item h5{
+margin:6px 0 3px;
+font-size:16px;
+font-weight:600;
+}
+
+.info-item small{
+margin:0;
+line-height:1.2;
+font-size:13px;
+color:#555;
+}
+
+.divider{
+width:1px;
+height:50px;
+background:#ddd;
+}
+
+/* ===== DASHBOARD ===== */
+.dashboard-preview{
+padding:60px 20px;
+background:#eef2f7;
+}
+
+.dashboard-preview h2{
+font-weight:700;
+margin-bottom:30px;
+}
+
+
+
+/* ===== COURSES ===== */
+.courses{
+padding:60px 20px;
 }
 
 .course-card{
 background:#fff;
 padding:25px;
-border-radius:12px;
-box-shadow:0 5px 15px rgba(0,0,0,0.15);
+border-radius:15px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
 text-align:center;
 transition:0.3s;
 }
 
 .course-card:hover{
-transform:translateY(-6px);
+transform:translateY(-10px);
+box-shadow:0 15px 30px rgba(0,0,0,0.2);
 }
 
 .course-img{
@@ -93,48 +130,277 @@ width:70px;
 margin-bottom:10px;
 }
 
-.rating{
-color:#f1c40f;
+.course-card h3{
 font-size:18px;
+font-weight:600;
 }
+
+.course-card p{
+font-size:14px;
+color:#555;
+}
+
+/* ===== FEATURES ===== */
+.features{
+padding:60px 20px;
+background:#f8fafc;
+}
+
+.feature-card{
+background:white;
+padding:25px;
+border-radius:12px;
+text-align:center;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+transition:0.3s;
+}
+
+.feature-card:hover{
+transform:translateY(-5px);
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:768px){
+
+#heroSlider .carousel-item{
+height:220px;
+}
+
+.info-strip{
+flex-direction:column;
+gap:20px;
+margin-top:20px;
+}
+
+.divider{
+display:none;
+}
+
+}
+
+
+
+/* ===== EXAM SECTION (FINAL FIX) ===== */
+
+.exam-section{
+padding:70px 20px;
+background:#f8fafc;
+}
+
+/* GRID */
+.exam-section .row{
+justify-content:center;
+}
+
+/* CARD */
+.exam-card{
+background:#fff;
+border-radius:16px;
+padding:25px;
+position:relative;
+overflow:hidden;
+box-shadow:0 8px 20px rgba(0,0,0,0.08);
+display:flex;
+justify-content:space-between;
+align-items:center;
+min-height:180px;
+transition:0.3s;
+}
+
+.exam-card:hover{
+transform:translateY(-6px);
+}
+
+/* RIGHT CURVE */
+.exam-card::after{
+content:"";
+position:absolute;
+right:-60px;
+top:0;
+width:200px;
+height:100%;
+border-radius:50%;
+opacity:0.4;
+z-index:1;
+}
+
+/* DIFFERENT COLORS */
+.exam-section .col-lg-4:nth-child(1) .exam-card::after{background:#f8cfcf;}
+.exam-section .col-lg-4:nth-child(2) .exam-card::after{background:#f5dba5;}
+.exam-section .col-lg-4:nth-child(3) .exam-card::after{background:#f5e7a5;}
+.exam-section .col-lg-4:nth-child(4) .exam-card::after{background:#dcdcf5;}
+.exam-section .col-lg-4:nth-child(5) .exam-card::after{background:#cfe3f5;}
+.exam-section .col-lg-4:nth-child(6) .exam-card::after{background:#e5e5e5;}
+
+
+/* LEFT */
+.exam-left{
+z-index:2;
+max-width:70%;
+}
+
+/* TAGS */
+.tags{
+margin:10px 0;
+}
+
+.tags span{
+display:inline-block;
+border:1px solid #ddd;
+padding:5px 12px;
+border-radius:20px;
+font-size:12px;
+margin:3px;
+background:white;
+}
+
+/* BUTTON */
+.explore-btn{
+display:inline-flex;
+align-items:center;
+gap:10px;
+margin-top:10px;
+text-decoration:none;
+color:#333;
+font-weight:500;
+}
+
+.explore-btn::after{
+content:"→";
+background:#f1f1f1;
+width:35px;
+height:35px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+/* RIGHT IMAGE */
+.exam-right img{
+width:70px;
+z-index:2;
+position:relative;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+.exam-card{
+flex-direction:column;
+align-items:flex-start;
+gap:15px;
+}
+
+.exam-right{
+align-self:flex-end;
+}
+}
+
 </style>
 
 
-<!-- HERO -->
 
-<section class="hero">
+</style>
 
+<!-- 🔥 SLIDER -->
+<div class="container-fluid p-0">
+
+<div id="heroSlider" class="carousel slide carousel-fade"
+data-bs-ride="carousel"
+data-bs-interval="2500">
+
+<div class="carousel-inner">
+
+{% if sliders %}
+{% for s in sliders %}
+<div class="carousel-item {% if loop.first %}active{% endif %}">
+<img src="{{ url_for('static', filename='slider/' + s.image) }}">
+</div>
+{% endfor %}
+{% else %}
+<div class="carousel-item active">
+<img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644">
+</div>
+{% endif %}
+
+</div>
+
+</div>
+</div>
+
+<!-- 🔥 HERO -->
+<section class="hero-section">
 <div class="container">
+<div class="row align-items-center">
 
-<h1>Apex Institute</h1>
+<div class="col-md-6">
+<h1 class="hero-title">
+<span class="hero-highlight">India’s #1</span><br>
+Best Coaching Institute for IIT JEE, NEET & UPSC in India
+</h1>
 
-<p>AI Powered Student Performance Prediction System</p>
+<p class="mt-3">
+AI-powered education system to boost student performance 🚀
+</p>
 
-<div class="mt-4">
 
-<a href="/signup" class="btn btn-warning btn-custom m-2">
-Create Account
+<a href="/signup" class="btn btn-lg mt-3">Get Started →</a>
+
+<a href="/leaderboard" class="btn btn-lg mt-3 ms-2">
+Top Students →
 </a>
+</div>
 
-<a href="/login" class="btn btn-light btn-custom m-2">
-Student Login
-</a>
 
-<a href="/admin_login" class="btn btn-outline-light btn-custom m-2">
-Admin Panel
-</a>
-
+<div class="col-md-6 text-center">
+<img src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png"
+     alt="Online education platform"
+     width="180">
 </div>
 
 </div>
-
+</div>
 </section>
 
+<!-- 🔥 INFO STRIP -->
+<div class="container">
+<div class="info-strip">
 
-<!-- DASHBOARD PREVIEW -->
+<div class="info-item">
+<img src="https://img.icons8.com/color/96/video-call.png">
+<h5>Daily Live</h5>
+<small>Interactive classes</small>
+</div>
 
+<div class="divider"></div>
+
+<div class="info-item">
+<img src="https://img.icons8.com/color/96/edit-file.png">
+<h5>10 Million +</h5>
+<small>Tests, sample papers & notes</small>
+</div>
+
+<div class="divider"></div>
+
+<div class="info-item">
+<img src="https://img.icons8.com/color/96/ask-question.png">
+<h5>24 x 7</h5>
+<small>Doubt solving sessions</small>
+</div>
+
+<div class="divider"></div>
+
+<div class="info-item">
+<img src="https://img.icons8.com/color/96/prize.png">
+<h5>100 +</h5>
+<small>Offline centres</small>
+</div>
+
+</div>
+</div>
+
+<!-- ================= DASHBOARD ================= -->
 <section class="dashboard-preview">
-
 <div class="container">
 
 <h2 class="text-center mb-5">Live Dashboard Preview</h2>
@@ -142,347 +408,149 @@ Admin Panel
 <div class="row text-center">
 
 <div class="col-md-4">
-
 <div class="preview-box">
-
 <h5>Total Students</h5>
-
 <h2>{{ total_students }}</h2>
-
 </div>
-
 </div>
 
 <div class="col-md-4">
-
 <div class="preview-box">
-
 <h5>Average Score</h5>
-
 <h2>{{ avg_score }}%</h2>
-
 </div>
-
 </div>
 
 <div class="col-md-4">
-
 <div class="preview-box">
-
 <h5>Top Rank</h5>
-
 <h2>#{{ top_rank }}</h2>
-
+</div>
 </div>
 
 </div>
 
 </div>
-
-</div>
-
 </section>
 
-
-
-
-<!-- COURSES SLIDER -->
-<!-- POPULAR COURSES -->
-
+<!-- ================= COURSES ================= -->
 <section class="courses">
-
 <div class="container">
 
 <h2 class="text-center mb-5">Popular Courses</h2>
 
-<div id="courseSlider" class="carousel slide" data-bs-ride="carousel">
-
-<div class="carousel-inner">
-
-<!-- Slide 1 -->
-
-<div class="carousel-item active">
-
 <div class="row">
 
-<div class="col-md-4">
+{% if courses %}
+{% for c in courses %}
 
+<div class="col-md-4 mb-4">
 <div class="course-card">
 
-<img src="https://img.icons8.com/color/96/math.png" class="course-img">
+<img src="{{ url_for('static', filename='courses/' + c.image) }}" class="course-img">
 
-<h4>JEE Preparation</h4>
+<h4>{{ c.title }}</h4>
+<p class="text-muted">{{ c.description }}</p>
+<p>👨‍🏫 {{ c.faculty }}</p>
+<p>⏱ {{ c.duration }}</p>
 
-<p class="text-muted">Physics, Chemistry & Maths</p>
-
-<p>👨‍🏫 Faculty: Dr. Sharma</p>
-
-<p>⏱ Duration: 12 Months</p>
-
-<div class="rating">
-⭐ ⭐ ⭐ ⭐ ⭐
-</div>
+<div class="rating">⭐ ⭐ ⭐ ⭐ ⭐</div>
 
 <a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
 
 </div>
-
 </div>
 
-
-<div class="col-md-4">
-
-<div class="course-card">
-
-
-<div class="course-icon">🧬</div>
-
-<h4>NEET Preparation</h4>
-
-<p class="text-muted">Biology, Chemistry & Physics</p>
-
-<p>👨‍🏫 Faculty: Dr. Gupta</p>
-
-<p>⏱ Duration: 12 Months</p>
-
-<div class="rating">
-⭐ ⭐ ⭐ ⭐ ⭐
+{% endfor %}
+{% else %}
+<div class="text-center text-muted">
+No courses available 🚫
 </div>
-
-<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
+{% endif %}
 
 </div>
 
 </div>
-
-
-<div class="col-md-4">
-
-<div class="course-card">
-
-<img src="https://img.icons8.com/color/96/school.png" class="course-img">
-
-<h4>Foundation Course</h4>
-
-<p class="text-muted">Class 9-10 Preparation</p>
-
-<p>👨‍🏫 Faculty: Mr. Raj</p>
-
-<p>⏱ Duration: 6 Months</p>
-
-<div class="rating">
-⭐ ⭐ ⭐ ⭐
-</div>
-
-<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- Slide 2 -->
-
-<div class="carousel-item">
-
-<div class="row">
-
-<div class="col-md-4">
-
-<div class="course-card">
-
-<img src="https://img.icons8.com/color/96/test-passed.png" class="course-img">
-
-<h4>Test Series</h4>
-
-<p class="text-muted">Weekly Mock Tests</p>
-
-<p>👨‍🏫 Faculty: Team Apex</p>
-
-<p>⏱ Duration: 3 Months</p>
-
-<div class="rating">
-⭐ ⭐ ⭐ ⭐
-</div>
-
-<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
-
-</div>
-
-</div>
-
-
-<div class="col-md-4">
-
-<div class="course-card">
-
-<img src="https://img.icons8.com/color/96/book.png" class="course-img">
-
-<h4>Crash Course</h4>
-
-<p class="text-muted">Fast Revision Program</p>
-
-<p>👨‍🏫 Faculty: Dr. Verma</p>
-
-<p>⏱ Duration: 2 Months</p>
-
-<div class="rating">
-⭐ ⭐ ⭐ ⭐ ⭐
-</div>
-
-<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
-
-</div>
-
-</div>
-
-
-<div class="col-md-4">
-
-<div class="course-card">
-
-<img src="https://img.icons8.com/color/96/artificial-intelligence.png" class="course-img">
-
-<h4>AI Performance Coaching</h4>
-
-<p class="text-muted">AI Based Study Plan</p>
-
-<p>👨‍🏫 Faculty: AI Mentor</p>
-
-<p>⏱ Duration: Flexible</p>
-
-<div class="rating">
-⭐ ⭐ ⭐ ⭐ ⭐
-</div>
-
-<a href="#" class="btn btn-primary btn-sm mt-2">Enroll Now</a>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<button class="carousel-control-prev" type="button" data-bs-target="#courseSlider" data-bs-slide="prev">
-
-<span class="carousel-control-prev-icon"></span>
-
-</button>
-
-<button class="carousel-control-next" type="button" data-bs-target="#courseSlider" data-bs-slide="next">
-
-<span class="carousel-control-next-icon"></span>
-
-</button>
-
-</div>
-
-</div>
-
 </section>
 
 
-<!-- FEATURES -->
 
-<section class="features">
+
+
+<!-- ================= EXAM Categories================= -->
+<section class="exam-section">
 
 <div class="container">
 
-<h2 class="text-center mb-5">System Features</h2>
+<h2 class="text-center fw-bold">Exam Categories</h2>
+<p class="text-center text-muted mb-5">
+Apex Institute is preparing students for 35+ exam categories
+</p>
 
-<div class="row g-4">
+<!-- ===== FIRST 6 ===== -->
+<div class="row g-4" id="limitedCategories">
 
-<div class="col-md-4">
+{% for c in categories[:6] %}
 
-<div class="feature-card text-center">
+<div class="col-lg-4 col-md-6 col-12">
+<div class="exam-card">
 
-<div class="feature-icon">🤖</div>
+<div class="exam-left">
+<h5 class="fw-bold">{{ c.title }}</h5>
 
-<h4>AI Prediction</h4>
+<div class="tags">
+{% for tag in c.tags.split(',') %}
+<span>{{ tag }}</span>
+{% endfor %}
+</div>
 
-<p>Predict student exam performance using machine learning.</p>
+<a href="/category/{{ c.id }}" class="explore-btn">
+Explore Categories
+</a>
+</div>
 
+<div class="exam-right">
+<img src="{{ url_for('static', filename='categories/' + c.image) }}">
 </div>
 
 </div>
+</div>
 
-<div class="col-md-4">
-
-<div class="feature-card text-center">
-
-<div class="feature-icon">📊</div>
-
-<h4>Performance Analytics</h4>
-
-<p>Interactive charts for subject-wise analysis.</p>
+{% endfor %}
 
 </div>
 
+
+<!-- ===== ALL (HIDDEN) ===== -->
+<div class="row g-4 d-none" id="allCategories">
+
+{% for c in categories %}
+
+<div class="col-lg-4 col-md-6 col-12">
+<div class="exam-card">
+
+<div class="exam-left">
+<h5 class="fw-bold">{{ c.title }}</h5>
+
+<div class="tags">
+{% for tag in c.tags.split(',') %}
+<span>{{ tag }}</span>
+{% endfor %}
 </div>
 
-<div class="col-md-4">
-
-<div class="feature-card text-center">
-
-<div class="feature-icon">📈</div>
-
-<h4>Feature Importance</h4>
-
-<p>Identify factors affecting student success.</p>
-
+<a href="/category/{{ c.id }}" class="explore-btn">
+Explore Categories →
+</a>
 </div>
 
-</div>
-
-<div class="col-md-4">
-
-<div class="feature-card text-center">
-
-<div class="feature-icon">🏆</div>
-
-<h4>Leaderboard</h4>
-
-<p>Compare student rankings and results.</p>
-
-</div>
-
-</div>
-
-<div class="col-md-4">
-
-<div class="feature-card text-center">
-
-<div class="feature-icon">📂</div>
-
-<h4>Dataset Upload</h4>
-
-<p>Upload coaching datasets for AI training.</p>
-
+<div class="exam-right">
+<img src="{{ url_for('static', filename='categories/' + c.image) }}">
 </div>
 
 </div>
-
-<div class="col-md-4">
-
-<div class="feature-card text-center">
-
-<div class="feature-icon">🎯</div>
-
-<h4>Coaching Insights</h4>
-
-<p>AI-driven recommendations for improvement.</p>
-
 </div>
 
-</div>
+{% endfor %}
 
 </div>
 
@@ -490,6 +558,96 @@ Admin Panel
 
 </section>
 
+<!-- ====== TOGGLE VIEW ALL (DYNAMIC COUNT) =========== -->
 
+<div class="text-center mt-4 mb-5">
+
+<button id="toggleBtn"
+class="fw-bold"
+style="color:#5b5be6; border:none; background:none; border-bottom:2px dotted #5b5be6;">
+
+View All Categories ({{ category_count }})
+
+</button>
+
+</div>
+
+
+<!-- ================= end EXAM Categories================= -->
+
+
+
+
+
+
+
+<!-- ================= FEATURES ================= -->
+<section class="features">
+<div class="container">
+
+<h2 class="text-center mb-5">AI System Features</h2>
+
+<div class="row">
+
+<div class="col-md-4">
+<div class="feature-card">
+<h4>🤖 AI Prediction</h4>
+<p>Smart result prediction</p>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="feature-card">
+<h4>📊 Analytics</h4>
+<p>Performance insights</p>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="feature-card">
+<h4>🏆 Leaderboard</h4>
+<p>Top ranking system</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</section>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+
+document.getElementById("toggleBtn").addEventListener("click", function(){
+
+    let limited = document.getElementById("limitedCategories");
+    let all = document.getElementById("allCategories");
+
+    if(all.classList.contains("d-none")){
+        all.classList.remove("d-none");
+        limited.classList.add("d-none");
+        this.innerText = "Show Less";
+    }else{
+        all.classList.add("d-none");
+        limited.classList.remove("d-none");
+        this.innerText = "View All Categories";
+    }
+
+});
+
+</script>
+
+
+
+<!-- ================= STRUCTURED DATA ================= -->
+<script type="application/ld+json">
+{
+"@context":"https://schema.org",
+"@type":"EducationalOrganization",
+"name":"Apex Institute",
+"url":"http://127.0.0.1:5000/",
+"description":"Best coaching institute for IIT JEE, NEET, UPSC with AI learning system"
+}
+</script>
 
 {% endblock %}

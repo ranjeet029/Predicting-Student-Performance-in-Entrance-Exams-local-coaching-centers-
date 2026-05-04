@@ -1,0 +1,71 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<style>
+
+/* LOGIN BOX */
+
+.login-box{
+max-width:400px;
+margin:auto;
+margin-top:80px;
+background:white;
+padding:30px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.1);
+text-align:center;
+transition:0.3s;
+}
+
+/* SHAKE ANIMATION */
+
+@keyframes shake {
+0% { transform: translateX(0); }
+25% { transform: translateX(-5px); }
+50% { transform: translateX(5px); }
+75% { transform: translateX(-5px); }
+100% { transform: translateX(0); }
+}
+
+.shake{
+animation: shake 0.3s;
+}
+
+/* ALERT */
+
+.alert{
+border-radius:10px;
+font-weight:500;
+}
+
+</style>
+
+
+<div class="login-box {% if get_flashed_messages() %}shake{% endif %}">
+
+<h4 class="mb-3">🔐 Management Login</h4>
+
+<form method="POST">
+
+<input type="text" name="username" class="form-control mb-3" placeholder="User ID" required>
+
+<input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
+
+<button class="btn btn-primary w-100">Login</button>
+
+</form>
+
+<!-- 🔥 ERROR MESSAGE SHOW -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}
+<div class="alert alert-danger mt-3">
+{{ message }}
+</div>
+{% endfor %}
+{% endwith %}
+
+</div>
+
+{% endblock %}

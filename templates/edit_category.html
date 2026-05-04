@@ -1,0 +1,54 @@
+{% extends "admin_base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>Edit Category</h2>
+
+<form action="/edit_category/{{ category.id }}" method="POST" enctype="multipart/form-data">
+
+<!-- TITLE -->
+<input type="text" name="title" class="form-control mb-3"
+value="{{ category.title }}" placeholder="Category Name" required>
+
+<!-- TAGS -->
+<input type="text" name="tags" class="form-control mb-3"
+value="{{ category.tags }}" placeholder="Tags (comma separated)">
+
+<!-- CURRENT IMAGE -->
+<div class="mb-3">
+<label class="fw-bold">Current Image:</label><br>
+
+<img id="preview"
+     src="{{ url_for('static', filename='categories/' + category.image) }}"
+     width="140"
+     style="border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,0.1);">
+</div>
+
+<!-- NEW IMAGE -->
+<div class="mb-3">
+<label class="fw-bold">Change Image:</label>
+<input type="file" name="image" id="imageInput" class="form-control">
+</div>
+
+<!-- BUTTON -->
+<button class="btn btn-success px-4">Update</button>
+
+</form>
+
+</div>
+
+<!-- 🔥 IMAGE PREVIEW SCRIPT -->
+<script>
+document.getElementById("imageInput").onchange = function(e){
+
+    const file = e.target.files[0];
+
+    if(file){
+        document.getElementById("preview").src = URL.createObjectURL(file);
+    }
+
+}
+</script>
+
+{% endblock %}

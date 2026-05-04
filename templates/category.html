@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ===== CONTAINER FIX ===== */
+.container{
+max-width:1200px;
+margin:auto;
+}
+
+/* ===== CATEGORY HEADER ===== */
+
+.category-hero{
+background:#f5f7fb;
+padding:30px;
+border-radius:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:40px;
+flex-wrap:wrap;
+}
+
+.category-left{
+flex:1;
+min-width:250px;
+}
+
+.category-left h2{
+font-weight:700;
+margin-bottom:10px;
+}
+
+.tags span{
+display:inline-block;
+background:#eef1f5;
+padding:6px 12px;
+border-radius:20px;
+font-size:12px;
+margin:4px;
+}
+
+/* 🔥 IMAGE FIX (MAIN PROBLEM) */
+.category-img{
+width:150px;
+height:auto;
+object-fit:contain;
+}
+
+/* ===== COURSES ===== */
+
+.section-title{
+text-align:center;
+font-weight:700;
+margin-bottom:25px;
+}
+
+/* 🔥 IMPORTANT FIX */
+.course-row{
+display:flex;
+flex-wrap:wrap;
+gap:20px;
+justify-content:center;
+}
+
+/* CARD WIDTH CONTROL */
+.course-box{
+width:260px;
+}
+
+/* CARD */
+
+.course-card{
+background:#fff;
+border-radius:12px;
+padding:15px;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+text-align:center;
+transition:0.3s;
+}
+
+.course-card:hover{
+transform:translateY(-5px);
+}
+
+.course-img{
+width:100%;
+height:150px;
+object-fit:cover;
+border-radius:8px;
+margin-bottom:10px;
+}
+
+</style>
+
+
+<div class="container mt-5">
+
+<!-- ===== HEADER ===== -->
+
+<div class="category-hero">
+
+<div class="category-left">
+
+<h2>{{ category.title }}</h2>
+
+<div class="tags">
+{% for tag in category.tags.split(',') %}
+<span>{{ tag }}</span>
+{% endfor %}
+</div>
+
+<p class="text-muted">
+Explore all courses related to this category 🚀
+</p>
+
+</div>
+
+<img src="{{ url_for('static', filename='categories/' + category.image) }}" class="category-img">
+
+</div>
+
+
+<!-- ===== COURSES ===== -->
+
+<h4 class="section-title">Courses in this Category</h4>
+
+<div class="course-row">
+
+{% if courses %}
+
+{% for c in courses %}
+
+<div class="course-box">
+
+<div class="course-card">
+
+<img src="{{ url_for('static', filename='courses/' + c.image) }}" class="course-img">
+
+<h6>{{ c.title }}</h6>
+<p class="text-muted">{{ c.duration }}</p>
+
+<button class="btn btn-primary btn-sm w-100">Explore</button>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+{% else %}
+
+<p>No courses available</p>
+
+{% endif %}
+
+</div>
+
+</div>
+
+{% endblock %}

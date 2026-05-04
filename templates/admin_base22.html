@@ -10,6 +10,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
+<!-- FONT AWESOME -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -55,6 +56,7 @@ width:240px;
 background:#ffffff;
 border-right:1px solid #eaeaea;
 padding-top:10px;
+transition:0.3s;
 }
 
 .sidebar a{
@@ -69,13 +71,15 @@ border-left:4px solid transparent;
 transition:0.3s;
 }
 
+/* ICON STYLE (COLORFUL FIXED) */
+
 .sidebar a i{
 width:20px;
 text-align:center;
 font-size:16px;
 }
 
-/* ICON COLORS */
+/* Individual colors */
 
 .icon-home{color:#0984e3;}
 .icon-add{color:#00b894;}
@@ -85,13 +89,17 @@ font-size:16px;
 .icon-student{color:#00cec9;}
 .icon-course{color:#e84393;}
 .icon-slider{color:#2ecc71;}
-.icon-category{color:#9b59b6;}
 
 /* hover */
 
 .sidebar a:hover{
 background:#f5faff;
 color:#0d6efd;
+}
+
+/* keep icon color same on hover */
+.sidebar a:hover i{
+color:inherit;
 }
 
 /* active */
@@ -102,6 +110,10 @@ color:#0d6efd;
 border-left:4px solid #0d6efd;
 }
 
+.sidebar a.active i{
+color:inherit;
+}
+
 /* SECTION TITLE */
 
 .section-title{
@@ -109,6 +121,7 @@ padding:10px 20px;
 font-size:12px;
 color:#999;
 text-transform:uppercase;
+letter-spacing:1px;
 }
 
 /* MAIN */
@@ -116,6 +129,8 @@ text-transform:uppercase;
 .main-content{
 flex:1;
 padding:30px;
+background:#f4f6f9;
+min-height:100vh;
 }
 
 /* FOOTER */
@@ -221,25 +236,12 @@ Apex Institute
 
 <div class="section-title">Management</div>
 
-<!-- 🔥 NEW MANAGEMENT LINKS -->
-
 <a href="/admin_settings" class="{% if request.path=='/admin_settings' %}active{% endif %}">
 <i class="fa fa-user-graduate icon-student"></i> Students
 </a>
 
-<a href="/admin_management?tab=slider"
-class="{% if request.args.get('tab','slider')=='slider' %}active{% endif %}">
-<i class="fa fa-images icon-slider"></i> Slider
-</a>
-
-<a href="/admin_management?tab=course"
-class="{% if request.args.get('tab')=='course' %}active{% endif %}">
-<i class="fa fa-book icon-course"></i> Courses
-</a>
-
-<a href="/admin_management?tab=category"
-class="{% if request.args.get('tab')=='category' %}active{% endif %}">
-<i class="fa fa-layer-group icon-category"></i> Categories
+<a href="/admin_management" class="{% if request.path=='/admin_management' %}active{% endif %}">
+<i class="fa fa-cogs icon-slider"></i> Management
 </a>
 
 </div>
@@ -265,13 +267,6 @@ document.getElementById("sidebar").classList.toggle("active")
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
-
-
-
-
 
 </body>
 
